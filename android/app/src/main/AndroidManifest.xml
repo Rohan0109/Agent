@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.agent_login">
+    package="com.apiplatform.mugavan">
    <application
-        android:label="agent_login"
+        android:label="முகவன்"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

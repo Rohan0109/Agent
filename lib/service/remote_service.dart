@@ -1,112 +1,42 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:agent_login/service/people_json.dart';
-import 'package:agent_login/shared_pref.dart';
+import 'package:Mugavan/models/agent.dart';
+import 'package:Mugavan/utils/Constant.dart';
+import 'package:Mugavan/utils/shared.dart';
 import 'package:http/http.dart' as http;
 
-import 'display_peoples.dart';
+import '../models/People.dart';
+import '../models/Troop.dart';
 
 class RemoteService {
-  display_people() async {
-    var client = http.Client();
-    var accessToken = await Share_pref().get_accessToken();
+  static var client = http.Client();
 
-    var uri = Uri.parse(
-        'https://dev-sangam.gateway.apiplatform.io/v1/getAssignedPeople');
+  // display_people() async {
+  //   var client = http.Client();
+  //   var accessToken = await Share_pref().get_accessToken();
+  //
+  //   var uri = Uri.parse(
+  //       'https://dev-sangam.gateway.apiplatform.io/v1/getAssignedPeople');
+  //
+  //   var response = await client.get(uri, headers: {
+  //     'pkey': '3fdabdac7be3f1483fd675c4334d4a72',
+  //     'apikey': ' 0tF4kEqjlaKiGeZfN1vOSoSMtwHRqdNH',
+  //     'Content-Type': 'application/json',
+  //     'accessToken': accessToken
+  //   });
+  //
+  //   if (response.statusCode == 200) {
+  //     var json = response.body;
+  //     print('json');
+  //     print(json);
+  //     return displayFromJson(json);
+  //   }
+  // }
 
-    var response = await client.get(uri, headers: {
-      "pkey": "3fdabdac7be3f1483fd675c4334d4a72",
-      "apikey": " 0tF4kEqjlaKiGeZfN1vOSoSMtwHRqdNH",
-      'Content-Type': 'application/json',
-      'accessToken': accessToken
-    });
-
-    if (response.statusCode == 200) {
-      var json = response.body;
-      print("json");
-      print(json);
-      return displayFromJson(json);
-    }
-  }
-
-  assignpeople(List<int> ids) async {
-    var accessToken = await Share_pref().get_accessToken();
-    Map data = {"peopleIdList": ids};
-    var client = http.Client();
-    var body = json.encode(data);
-    var uri = Uri.parse(
-        'https://dev-sangam.gateway.apiplatform.io/v1/assignAgentForPeople');
-
-    var response = await client.patch(uri, body: body, headers: {
-      "pkey": " 3fe5847e511aafce3fe2d16bbd581823",
-      "apikey": " 0tF4kEqjlaKiGeZfN1vOSoSMtwHRqdNH",
-      'Content-Type': 'application/json',
-      'accessToken': accessToken
-    });
-
-    if (response.statusCode == 200) {
-      print(response.body);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  Future<List<People>?> getpeople() async {
-    var client = http.Client();
-    var accessToken = await Share_pref().get_accessToken();
-
-    var uri =
-        Uri.parse('https://dev-sangam.gateway.apiplatform.io/v1/getWardPeople');
-
-    var response = await client.get(uri, headers: {
-      "pkey": "3fdabdac7be3f1483fd675c4334d4a72",
-      "apikey": " 0tF4kEqjlaKiGeZfN1vOSoSMtwHRqdNH",
-      'Content-Type': 'application/json',
-      'accessToken': accessToken
-    });
-
-    if (response.statusCode == 200) {
-      var json = response.body;
-      print("people");
-      return peopleFromJson(json);
-    }
-  }
-
-  Future<Map<String, dynamic>?> getprofile() async {
-    var client = http.Client();
-    var accessToken = await Share_pref().get_accessToken();
-
-    var uri =
-        Uri.parse('https://dev-sangam.gateway.apiplatform.io/v1/getAgent');
-
-    var response = await client.get(uri, headers: {
-      "pkey": "3fdabdac7be3f1483fd675c4334d4a72",
-      "apikey": " 0tF4kEqjlaKiGeZfN1vOSoSMtwHRqdNH",
-      'Content-Type': 'application/json',
-      'accessToken': accessToken
-    });
-
-    if (response.statusCode == 200) {
-      var json_data = json.decode(response.body);
-
-      return json_data["data"];
-    }
-  }
-
-  get_otp(var phone) async {
-    Map data = {"phoneNumber": phone};
-    var client = http.Client();
-    var body = json.encode(data);
-    var uri =
-        Uri.parse('https://dev-sangam.gateway.apiplatform.io/v1/addAgent');
-    var response = await client.post(uri, body: body, headers: {
-      "pkey": " 3fe5847e511aafce3fe2d16bbd581823",
-      "apikey": " 0tF4kEqjlaKiGeZfN1vOSoSMtwHRqdNH",
-      'Content-Type': 'application/json',
-    });
-
+  static Future<bool> createAccount(Map<String, String> data) async {
+    var response = await client.post(Uri.parse('${Constant.url}/v1/addAgent'),
+        body: json.encode(data), headers: Constant.headers);
     if (response.statusCode == 200) {
       return true;
     } else {
@@ -114,99 +44,95 @@ class RemoteService {
     }
   }
 
-  auth_otp(var phone, var otp) async {
-    Map data = {"otp": otp, "phoneNumber": phone};
-
-    var client = http.Client();
-    var body = json.encode(data);
-    var uri =
-        Uri.parse('https://dev-sangam.gateway.apiplatform.io/v1/agentAuth');
-    var response = await client.patch(uri, body: body, headers: {
-      "pkey": " 3fe5847e511aafce3fe2d16bbd581823",
-      "apikey": " 0tF4kEqjlaKiGeZfN1vOSoSMtwHRqdNH",
-      'Content-Type': 'application/json',
-    });
-
-    if (response.statusCode == 200) {
-      var mapobject = jsonDecode(response.body);
-
-      Share_pref().shared_preferences(
-          mapobject["data"]["phoneNumber"],
-          mapobject["data"]["isAuthorized"],
-          mapobject["data"]["accessToken"],
-          mapobject["data"]["id"]);
-      return true;
+  static Future<Map<String, dynamic>?> authOTP(
+      Map<String, dynamic> data) async {
+    var response = await client.patch(Uri.parse('${Constant.url}/v1/agentAuth'),
+        body: json.encode(data), headers: Constant.headers);
+    if (response.statusCode == 201) {
+      await Shared.setShared(jsonDecode(response.body));
+      return jsonDecode(response.body);
     } else {
-      return false;
+      return null;
     }
   }
 
-  update_profile(var name, var country, var state, var district, var taluk,
-      var email, var subward, var ward) async {
-    var accessToken = await Share_pref().get_accessToken();
-    Map data = {
-      "name": name,
-      "subWard": subward,
-      "ward": ward,
-      "country": country.split(" ")[1],
-      "state": state,
-      "district": district,
-      "taluk": taluk,
-      "email": email
-
-      /*  "name":"rohan",
-       "subWard" :"NEE",
-       "ward":"east",
-       "country":"india",
-       "state":"tamilnadu",
-       "district":"trichy",
-       "taluk":"asw",
-       "email":"rohan@gmail.com"*/
-    };
-    var client = http.Client();
-    var body = json.encode(data);
-    var uri =
-        Uri.parse('https://dev-sangam.gateway.apiplatform.io/v1/updateAgent');
-
-    var response = await client.patch(uri, body: body, headers: {
-      "pkey": " 3fe5847e511aafce3fe2d16bbd581823",
-      "apikey": " 0tF4kEqjlaKiGeZfN1vOSoSMtwHRqdNH",
-      'Content-Type': 'application/json',
-      'accessToken': accessToken
-    });
-
+  static Future<Agent?> getAgent() async {
+    Map<String, String> headers = Constant.headers;
+    headers['accessToken'] = await Shared.getAccessToken();
+    var response = await client.get(Uri.parse('${Constant.url}/v1/getAgent'),
+        headers: headers);
     if (response.statusCode == 200) {
-      print(response.body);
-      return true;
+      return agentFromJson(response.body).elementAt(0);
     } else {
-      return false;
+      return null;
     }
   }
 
-  updatePeopleStatus(var id, var status, var percentage) async {
-    var accessToken = await Share_pref().get_accessToken();
-    Map data = {
-      "peopleId": id,
-      "status": status,
-      "statusPercentage": percentage
-    };
-    var client = http.Client();
-    var body = json.encode(data);
-    var uri = Uri.parse(
-        'https://dev-sangam.gateway.apiplatform.io/v1/updatePeopleStatus');
-
-    var response = await client.patch(uri, body: body, headers: {
-      "pkey": " 3fe5847e511aafce3fe2d16bbd581823",
-      "apikey": " 0tF4kEqjlaKiGeZfN1vOSoSMtwHRqdNH",
-      'Content-Type': 'application/json',
-      'accessToken': accessToken
-    });
-
+  static Future<bool?> updateAgent(Map<String, dynamic> data) async {
+    Map<String, String> headers = Constant.headers;
+    headers['accessToken'] = await Shared.getAccessToken();
+    var response = await client.patch(
+        Uri.parse('${Constant.url}/v1/updateAgent'),
+        body: json.encode(data),
+        headers: headers);
     if (response.statusCode == 200) {
-      print(response.body);
+      await Shared.updatedSession();
       return true;
     } else {
-      return false;
+      return null;
+    }
+  }
+
+  static Future<List<Troop>?> getTroops() async {
+    Map<String, String> headers = Constant.headers;
+    headers['accessToken'] = await Shared.getAccessToken();
+    var response = await client.get(
+        Uri.parse('${Constant.url}/v1/getAssignedPeople'),
+        headers: headers);
+    if (response.statusCode == 200) {
+      return troopFromJson(response.body);
+    } else {
+      return null;
+    }
+  }
+
+  static Future<bool?> updateTroop(Map<String, dynamic> data) async {
+    Map<String, String> headers = Constant.headers;
+    headers['accessToken'] = await Shared.getAccessToken();
+    var response = await client.patch(
+        Uri.parse('${Constant.url}/v1/update-troop'),
+        body: json.encode(data),
+        headers: headers);
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return null;
+    }
+  }
+
+  static Future<List<People>?> getPeoples() async {
+    Map<String, String> headers = Constant.headers;
+    headers['accessToken'] = await Shared.getAccessToken();
+    var response = await client
+        .get(Uri.parse('${Constant.url}/v1/getWardPeople'), headers: headers);
+    if (response.statusCode == 200) {
+      return peopleFromJson(response.body);
+    } else {
+      return null;
+    }
+  }
+
+  static Future<bool?> assignPeoples(Map<String, dynamic> data) async {
+    Map<String, String> headers = Constant.headers;
+    headers['accessToken'] = await Shared.getAccessToken();
+    var response = await client.patch(
+        Uri.parse('${Constant.url}/v1/assignAgentForPeople'),
+        body: json.encode(data),
+        headers: headers);
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return null;
     }
   }
 }

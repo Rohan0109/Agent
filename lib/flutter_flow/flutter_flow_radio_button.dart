@@ -210,7 +210,7 @@ class RadioGroup<T> extends StatelessWidget {
   List<Widget> get _group => items.map(
         (item) {
       final radioButtonBuilder = itemBuilder(item);
-      return Container(
+      return SizedBox(
         height: optionHeight,
         child: RadioButton(
           description: radioButtonBuilder.description,
