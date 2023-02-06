@@ -1,31 +1,35 @@
 import 'package:Mugavan/screens/dashboard.dart';
-import 'package:Mugavan/screens/profile.dart';
+import 'package:Mugavan/screens/new_profile.dart';
 import 'package:Mugavan/service/remote_service.dart';
+import 'package:Mugavan/utils/constant.dart';
 
-import '../../flutter_flow/flutter_flow_theme.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:flutter/material.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 
-import '../flutter_flow/flutter_flow_widgets.dart';
+import '../utils/shared.dart';
 
 class Auth extends StatefulWidget {
-  String phonenumber;
-
-  Auth({required this.phonenumber});
+  const Auth({super.key});
 
   @override
   _AuthState createState() => _AuthState();
 }
 
 class _AuthState extends State<Auth> {
-  var _isShowButton = true;
+  String? phone;
+
+  RemoteService remoteService = RemoteService();
+
+  var _isLoading = false;
 
   TextEditingController? pinCodeController;
 
+  final formKey = GlobalKey<FormState>();
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
+    getPhoneNumber();
     super.initState();
     pinCodeController = TextEditingController();
   }
@@ -34,101 +38,88 @@ class _AuthState extends State<Auth> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
       appBar: AppBar(
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         automaticallyImplyLeading: false,
-        title: Text(
-          'Enter Pin Code Below',
-          style: FlutterFlowTheme.of(context).bodyText1,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text(
+              Constant.account,
+              style: TextStyle(fontSize: 18.0),
+            ),
+          ],
         ),
-        actions: const [],
-        centerTitle: true,
-        elevation: 0,
+        centerTitle: false,
+        elevation: 1,
       ),
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
+      body: showBody(),
+    );
+  }
+
+  Widget showBody() {
+    return Padding(
+      padding: EdgeInsets.all(8.0),
+      child: Form(
+        key: formKey,
         child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(0, 24, 0, 0),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Text(
-                    'Confirm your Code',
-                    style: FlutterFlowTheme.of(context).title3,
-                  ),
-                  Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(0, 32, 0, 0),
-                    child: PinCodeTextField(
-                      appContext: context,
-                      length: 4,
-                      textStyle:
-                          FlutterFlowTheme.of(context).subtitle2.override(
-                                fontFamily: 'Poppins',
-                                color: Colors.black,
-                              ),
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      enableActiveFill: false,
-                      autoFocus: true,
-                      showCursor: true,
-                      cursorColor: Colors.black,
-                      obscureText: false,
-                      hintCharacter: '-',
-                      pinTheme: PinTheme(
-                        fieldHeight: 60,
-                        fieldWidth: 60,
-                        borderWidth: 2,
-                        borderRadius: BorderRadius.circular(12),
-                        shape: PinCodeFieldShape.box,
-                        activeColor: Colors.black,
-                        inactiveColor:
-                            FlutterFlowTheme.of(context).primaryBackground,
-                        selectedColor: Colors.black,
-                        activeFillColor:
-                            FlutterFlowTheme.of(context).primaryColor,
-                        inactiveFillColor:
-                            FlutterFlowTheme.of(context).primaryBackground,
-                        selectedFillColor: Colors.black,
-                      ),
-                      controller: pinCodeController,
-                      onChanged: (_) => {},
-                    ),
-                  ),
-                ],
-              ),
+            Text(
+              '$phone இந்த தொலைபேசிக்கு அனுப்பப்பட்ட ஒருமுறை கடவுச் சொல்லை அனுப்பவும்',
+              style: TextStyle(fontSize: 18.0),
             ),
-            Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(0, 24, 0, 44),
-              child: _isShowButton
-                  ? FFButtonWidget(
-                      onPressed: () {
+            SizedBox(
+              height: 20,
+            ),
+            PinCodeTextField(
+              validator: (value) {
+                if (value == null || value.length != 4) {
+                  return 'ஒருமுறை கடவுச் சொல்லை பதிவிடவும்';
+                } else {
+                  return null;
+                }
+              },
+              keyboardType: TextInputType.number,
+              appContext: context,
+              length: 4,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              enableActiveFill: false,
+              autoFocus: true,
+              showCursor: true,
+              cursorColor: Colors.black,
+              obscureText: false,
+              hintCharacter: '-',
+              controller: pinCodeController,
+              onChanged: (_) => {},
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            _isLoading
+                ? CircularProgressIndicator()
+                : MaterialButton(
+                    padding: EdgeInsets.all(16.0),
+                    minWidth: double.infinity,
+                    height: 46,
+                    color: Colors.blue,
+                    textColor: Colors.white,
+                    onPressed: () {
+                      if (formKey.currentState!.validate()) {
                         authOTP();
-                      },
-                      text: 'Confirm & Continue',
-                      options: FFButtonOptions(
-                        width: 270,
-                        height: 50,
-                        color: FlutterFlowTheme.of(context).primaryText,
-                        textStyle:
-                            FlutterFlowTheme.of(context).subtitle2.override(
-                                  fontFamily: 'Poppins',
-                                  color: FlutterFlowTheme.of(context)
-                                      .primaryBackground,
-                                ),
-                        elevation: 2,
-                        borderSide: const BorderSide(
-                          color: Colors.transparent,
-                          width: 1,
+                      }
+                    },
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0)),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text(
+                          Constant.submit,
+                          style: TextStyle(fontSize: 18.0),
                         ),
-                        borderRadius: 12,
-                      ),
-                    )
-                  : const CircularProgressIndicator(),
-            ),
+                        Icon(Icons.arrow_forward)
+                      ],
+                    ),
+                  )
           ],
         ),
       ),
@@ -137,23 +128,58 @@ class _AuthState extends State<Auth> {
 
   Future<void> authOTP() async {
     setState(() {
-      _isShowButton = false;
+      _isLoading = true;
     });
-    Map<String, dynamic> data = {
-      'otp': pinCodeController?.text,
-      'phone': widget.phonenumber
-    };
-    Map<String, dynamic>? res = await RemoteService.authOTP(data);
-    if (res!['accessToken'] != null && res!['session'] == 'AUTHORIZED') {
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => const Profile()));
-    } else if (res!['accessToken'] != null && res!['session'] == 'UPDATED') {
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => const Dashboard()));
-    } else {
+    try {
+      Map<String, dynamic> maps = await remoteService
+          .authOTP({'otp': pinCodeController?.text, 'phone': phone});
+      storeData(maps);
+    } catch (e) {
       setState(() {
-        _isShowButton = true;
+        _isLoading = false;
       });
+      _updateSuccessMessage(e);
     }
+  }
+
+  storeData(Map<String, dynamic> res) {
+    setState(() {
+      _isLoading = false;
+    });
+    if (res!['accessToken'] != null && res!['session'] == false) {
+      Shared.setAuthShared(res).then((bool value) => {
+            if (value)
+              {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const NewProfile()))
+              }
+            else
+              {}
+          });
+    } else if (res!['accessToken'] != null && res!['session'] == true) {
+      Shared.setShared(res).then((value) => {
+            if (value)
+              {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const Dashboard()))
+              }
+            else
+              {}
+          });
+    }
+  }
+
+  void getPhoneNumber() async {
+    Shared.getPhonenumber().then((value) => {
+          setState(() {
+            phone = value;
+          })
+        });
+  }
+
+  void _updateSuccessMessage(var e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.toString()),
+        duration: Duration(seconds: Constant.limit, milliseconds: 0)));
   }
 }

@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:Mugavan/screens/dashboard.dart';
-import 'package:Mugavan/screens/profile.dart';
+import 'package:Mugavan/screens/new_profile.dart';
 import 'package:Mugavan/screens/signup.dart';
-import 'package:Mugavan/utils/Constant.dart';
+import 'package:Mugavan/utils/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,12 +34,11 @@ class _SplashState extends State<Splash> {
   }
 
   route() {
-    if (prefs.getString('session') != null &&
-        prefs.getString('session') == 'AUTHORIZED') {
+    if (prefs.getBool('session') != null && prefs.getBool('session') == false) {
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => const Profile()));
-    } else if (prefs.getString('session') != null &&
-        prefs.getString('session') == 'UPDATED') {
+          context, MaterialPageRoute(builder: (context) => const NewProfile()));
+    } else if (prefs.getBool('session') != null &&
+        prefs.getBool('session') == true) {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => const Dashboard()));
     } else {
@@ -57,6 +56,7 @@ class _SplashState extends State<Splash> {
 
   initScreen(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.max,

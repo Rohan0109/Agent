@@ -1,8 +1,10 @@
 import 'dart:ui';
 
-import 'package:Mugavan/models/People.dart';
+import 'package:Mugavan/models/voter.dart';
 import 'package:Mugavan/service/remote_service.dart';
 import 'package:flutter/material.dart';
+
+import '../utils/constant.dart';
 
 class Peoples extends StatefulWidget {
   const Peoples({Key? key}) : super(key: key);
@@ -12,22 +14,28 @@ class Peoples extends StatefulWidget {
 }
 
 class _PeoplesState extends State<Peoples> {
+  RemoteService remoteService = RemoteService();
+
+  final List<String> _tSex = ['ஆண்', 'பெண்', 'மூன்றாம் பாலினத்தவர்'];
+  final List<String> _eSex = ['male', 'female', 'transgender'];
+
   List<int> assignIds = [];
-  List<People>? peoples;
-  bool isLoading = false;
+  List<Voter>? _voters;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    getWardsPeoples();
+    getWardsVoters();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: true,
-        title: Text('People List'),
+        title: Text(Constant.booth),
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -37,12 +45,10 @@ class _PeoplesState extends State<Peoples> {
                 if (assignIds.isNotEmpty) {
                   showAlert();
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('At least select one person'),
-                      duration: Duration(seconds: 2, milliseconds: 0)));
+                  _updateSuccessMessage('ஒரு வாக்காளரையாவது இணைக்கவும்');
                 }
               },
-              child: Text('Assign',
+              child: Text(Constant.join,
                   style: TextStyle(
                       color: Color.fromRGBO(31, 71, 136, 1),
                       fontWeight: FontWeight.bold)),
@@ -52,23 +58,35 @@ class _PeoplesState extends State<Peoples> {
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
-        child: isLoading
-            ? getOrderListWidget()
-            : const Center(
-                child: CircularProgressIndicator(),
-              ),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : getOrderListWidget(),
       ),
     );
   }
 
   Widget getOrderListWidget() {
-    if (peoples?.isNotEmpty ?? false) {
-      var listView = ListView.builder(
-        itemCount: peoples?.length,
+    if (_voters?.isNotEmpty ?? false) {
+      var listView = GridView.builder(
+        itemCount: _voters?.length,
+        gridDelegate:
+            SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
         itemBuilder: (BuildContext context, int index) {
           return GestureDetector(
-              onTap: () {},
+              onTap: () {
+                setState(() {
+                  if (_voters?[index].isTaken == true) {
+                    _voters?[index].isTaken = false;
+                    assignIds.removeAt(index);
+                  } else {
+                    _voters?[index].isTaken = true;
+                    assignIds.add((_voters?[index].id)!);
+                  }
+                });
+              },
               child: Card(
+                elevation: 1,
+                color: Color.fromRGBO(33, 150, 243, 1.0),
                 shape: RoundedRectangleBorder(
                   side: BorderSide(
                     color: Colors.blue.shade50,
@@ -77,50 +95,55 @@ class _PeoplesState extends State<Peoples> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              peoples?[index].name ?? '',
-                              style: TextStyle(fontSize: 18.0),
-                            ),
-                            Text(
-                              changeTimeStampToDate(
-                                      peoples?[index].createdAt ?? '')
-                                  .substring(0, 11),
-                              style: TextStyle(fontSize: 18.0),
-                            ),
-                          ],
-                        ),
+                      Text(
+                        (_voters?[index]?.voterId.toString())!,
+                        style: TextStyle(fontSize: 26.0, color: Colors.white),
                       ),
-                      Column(
-                        children: [],
+                      Text(
+                        (_voters?[index]?.name.ta.toString().toUpperCase())!,
+                        style: TextStyle(fontSize: 20.0, color: Colors.white),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            Checkbox(
-                              value: peoples?[index].isTaken,
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  peoples?[index].isTaken = value;
-                                  if (value!)
-                                    assignIds.add(peoples?[index].id);
-                                  else
-                                    assignIds.removeAt(index);
-                                });
-                              },
-                            ),
-                          ],
-                        ),
+                      Text(
+                        (_voters?[index]
+                            ?.sentinal
+                            .ta
+                            .toString()
+                            .toUpperCase())!,
+                        style: TextStyle(fontSize: 20.0, color: Colors.white),
+                      ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Text(
+                            '${_tSex[_eSex.indexOf((_voters?[index]?.sex.toString().toLowerCase())!)]}',
+                            style:
+                                TextStyle(fontSize: 14.0, color: Colors.white),
+                          ),
+                          Text(
+                            'வயது : ${(_voters?[index]?.age.toString())!}',
+                            style:
+                                TextStyle(fontSize: 14.0, color: Colors.white),
+                          ),
+                        ],
+                      ),
+                      Checkbox(
+                        focusColor: Colors.white,
+                        value: _voters?[index].isTaken,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            _voters?[index].isTaken = value!;
+                            if (value!) {
+                              assignIds.add((_voters?[index].id)!);
+                            } else {
+                              assignIds.removeAt(index);
+                            }
+                          });
+                        },
                       ),
                     ],
                   ),
@@ -151,7 +174,7 @@ class _PeoplesState extends State<Peoples> {
                       width: 300,
                     ),
                     SizedBox(height: 10),
-                    Text('No People Found')
+                    Text('வாக்குசாவடியில் வாக்காளர்கள் இல்லை.')
                   ],
                 ),
               ),
@@ -164,17 +187,26 @@ class _PeoplesState extends State<Peoples> {
 
   Future<void> _refresh() async {
     setState(() {
-      peoples?.clear();
+      _isLoading = true;
+      _voters?.clear();
     });
-    getWardsPeoples();
+    getWardsVoters();
   }
 
-  Future<void> getWardsPeoples() async {
-    List<People>? peoples = await RemoteService.getPeoples();
-    setState(() {
-      this.peoples = peoples;
-      isLoading = true;
-    });
+  Future<void> getWardsVoters() async {
+    try {
+      List<Voter> voters = await remoteService.getUnassingedVotersWithWard();
+      setState(() {
+        _isLoading = false;
+        _voters = voters;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _voters = [];
+      });
+      _updateSuccessMessage(e);
+    }
   }
 
   String changeTimeStampToDate(int timeStamp) {
@@ -183,24 +215,21 @@ class _PeoplesState extends State<Peoples> {
 
   void showAlert() {
     Widget cancelButton = TextButton(
-      child: Text("Cancel"),
+      child: Text(Constant.no),
       onPressed: () {
         Navigator.pop(context);
       },
     );
     Widget continueButton = TextButton(
-      child: Text("Continue"),
+      child: Text(Constant.join),
       onPressed: () async {
         Navigator.pop(context);
-        assignPeoples();
+        assignVoters();
       },
     );
 
     AlertDialog alert = AlertDialog(
-      title: Text(
-        'Assign People',
-      ),
-      content: Text('Are you sure you want to Assign?'),
+      content: Text('இவர்களை தங்களின் வாக்காளராக இணைக்கிறீர்களா ?'),
       actions: [
         cancelButton,
         continueButton,
@@ -215,29 +244,31 @@ class _PeoplesState extends State<Peoples> {
     );
   }
 
-  Future<void> assignPeoples() async {
+  assignVoters() async {
     setState(() {
-      isLoading = false;
+      _isLoading = true;
     });
-    Map<String, dynamic> data = {'peoples': assignIds};
-    bool? isSuccess = await RemoteService.assignPeoples(data);
-    if (isSuccess!) {
-      for (var id in assignIds!) {
-        peoples?.removeWhere((element) => element.id == id);
+
+    try {
+      bool isSuccess =
+          await remoteService.assignVoters({'votersId': assignIds});
+      if (isSuccess == true) {
+        setState(() {
+          _isLoading = false;
+        });
+        Navigator.pop(context);
       }
+    } catch (e) {
       setState(() {
-        isLoading = true;
+        _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('People assign successfully.'),
-          duration: Duration(seconds: 2, milliseconds: 0)));
-    } else {
-      setState(() {
-        isLoading = true;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Something went wrong,Please try again later.'),
-          duration: Duration(seconds: 2, milliseconds: 0)));
+      _updateSuccessMessage(e);
     }
+  }
+
+  void _updateSuccessMessage(var e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.toString()),
+        duration: Duration(seconds: Constant.limit, milliseconds: 0)));
   }
 }

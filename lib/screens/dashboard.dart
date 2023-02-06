@@ -1,6 +1,6 @@
 import 'package:Mugavan/screens/account.dart';
 import 'package:Mugavan/screens/mypeople_list.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:Mugavan/utils/constant.dart';
 import 'package:flutter/material.dart';
 
 class Dashboard extends StatefulWidget {
@@ -13,9 +13,21 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   int _selectedIndex = 0;
 
-  List<Widget> _widgetOptions = <Widget>[MyPeopleList(), Account()];
+  late PageController pageController;
+
+  final List<Widget> _widgetOptions = <Widget>[
+    const MyPeopleList(),
+    const Account(),
+  ];
 
   void _onItemTap(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    pageController.jumpToPage(index);
+  }
+
+  void onPageChanged(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -24,21 +36,31 @@ class _DashboardState extends State<Dashboard> {
   @override
   void initState() {
     super.initState();
+    pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    pageController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
+      body: PageView(
+        controller: pageController,
+        onPageChanged: onPageChanged,
+        children: _widgetOptions,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         items: const [
           BottomNavigationBarItem(
-              label: "MyPeople",
+              label: Constant.voter,
               icon: Icon(Icons.list_alt),
               backgroundColor: Color.fromRGBO(31, 71, 136, 1)),
           BottomNavigationBarItem(
-              label: "Account",
+              label: Constant.account,
               icon: Icon(Icons.account_circle),
               backgroundColor: Color.fromRGBO(31, 71, 136, 1)),
         ],

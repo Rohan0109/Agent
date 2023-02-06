@@ -1,25 +1,56 @@
+import 'package:Mugavan/models/activity.dart';
+import 'package:Mugavan/models/party.dart' as py;
+import 'package:Mugavan/screens/history.dart';
+import 'package:Mugavan/screens/message.dart';
 import 'package:Mugavan/service/remote_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 
-import '../models/Troop.dart';
+import '../models/party.dart';
+import '../models/voter.dart';
+import '../utils/constant.dart';
 
 class UpdateTroop extends StatefulWidget {
-  final Troop troop;
+  final Voter voter;
 
-  const UpdateTroop({super.key, required this.troop});
+  const UpdateTroop({super.key, required this.voter});
 
   @override
   State<UpdateTroop> createState() => _UpdateTroopState();
 }
 
 class _UpdateTroopState extends State<UpdateTroop> {
-  String statusValue = '';
-  String statusPercentageValue = '';
-  bool _status = true;
+  RemoteService remoteService = RemoteService();
+
+  final formKey = GlobalKey<FormState>();
+  final formKey2 = GlobalKey<FormState>();
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  bool _isLoading = true;
+  bool _isVoterLoading = false;
+  Color _color = Colors.blue;
+
+  Activity? activity;
+
+  List<Activity> _activities = [];
+
+  List<Party> _parties = [
+    Party(
+        name: py.Name(en: '--Select District --', ta: '-- கட்சி --'),
+        short: py.Name(en: '--Select District --', ta: '-- கட்சி --'),
+        imageUrl: 'imageUrl',
+        createdAt: 0,
+        updatedAt: 0,
+        id: 0)
+  ];
+
+  Party? selectedParty;
+  String statusPercentageValue = '0';
+
   final FocusNode myFocusNode = FocusNode();
 
-  List<String> status = ['POSITIVE', 'NEGATIVE', 'NEUTRAL'];
+  final List<String> _tSex = ['ஆண்', 'பெண்', 'மூன்றாம் பாலினத்தவர்'];
+  final List<String> _eSex = ['male', 'female', 'transgender'];
+
   List<String> statusPercentage = [
     '0',
     '10',
@@ -35,25 +66,43 @@ class _UpdateTroopState extends State<UpdateTroop> {
   ];
 
   TextEditingController? voterIdController;
-  TextEditingController? wardController;
-  TextEditingController? subWardController;
   TextEditingController? nameController;
   TextEditingController? fatherNameController;
-  TextEditingController? typeController;
-  TextEditingController? labNameController;
+  TextEditingController? phonenumberController;
+  TextEditingController? doorNoController;
+  TextEditingController? ageController;
+  TextEditingController? sexController;
+  TextEditingController? commandController;
 
   @override
   void initState() {
+    selectedParty = _parties[0];
+    getParties();
     super.initState();
-    statusValue = widget.troop.activity.status.toString().toUpperCase();
-    statusPercentageValue = widget.troop.activity.statusPercentage.toString();
-    voterIdController = TextEditingController(text: widget.troop.voterId);
-    wardController = TextEditingController(text: widget.troop.ward);
-    subWardController = TextEditingController(text: widget.troop.subWard);
-    nameController = TextEditingController(text: widget.troop.name);
-    fatherNameController = TextEditingController(text: widget.troop.fatherName);
-    typeController = TextEditingController();
-    labNameController = TextEditingController();
+    voterIdController = TextEditingController(text: widget.voter.voterId);
+    nameController =
+        TextEditingController(text: widget.voter.name.ta.toString());
+    fatherNameController =
+        TextEditingController(text: widget.voter.sentinal.ta.toString());
+    phonenumberController = TextEditingController(text: widget.voter.phone);
+    doorNoController =
+        TextEditingController(text: widget.voter.doorNo.toString());
+    ageController = TextEditingController(text: widget.voter.age.toString());
+    sexController = TextEditingController(
+        text: _tSex[_eSex.indexOf(widget.voter.sex.toLowerCase().toString())]);
+    commandController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    voterIdController?.dispose();
+    nameController?.dispose();
+    fatherNameController?.dispose();
+    phonenumberController?.dispose();
+    doorNoController?.dispose();
+    ageController?.dispose();
+    sexController?.dispose();
+    commandController = TextEditingController();
   }
 
   @override
@@ -61,226 +110,505 @@ class _UpdateTroopState extends State<UpdateTroop> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,
-        backgroundColor: Color.fromRGBO(31, 71, 136, 1),
         actions: [
           IconButton(
-            icon: Icon(Icons.save, color: Colors.white),
+            icon: Icon(Icons.delete, color: Colors.white),
             onPressed: () {
-              updateTroop();
+              showAlertDialog(context);
             },
-          )
+          ),
         ],
         elevation: 0,
         title: const Text(
-          'Update Troop',
+          'வாக்காளர்',
         ),
       ),
-      body: _status
-          ? SingleChildScrollView(child: accounts())
-          : const Center(
-              child: CircularProgressIndicator(),
-            ),
+      body: RefreshIndicator(
+          onRefresh: _refresh, child: SingleChildScrollView(child: accounts())),
     );
+  }
+
+  Future<void> _refresh() async {
+    setState(() {
+      _isLoading = true;
+    });
+    getParties();
   }
 
   Widget accounts() {
     return Column(
       children: <Widget>[
-        Container(
-          color: Colors.white,
-          child: Column(
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.only(top: 40.0),
-                child: Stack(fit: StackFit.loose, children: <Widget>[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      ProfilePicture(
-                        name: widget.troop.name,
-                        radius: 50,
-                        fontsize: 50,
+        _isLoading
+            ? Container(
+                height: 300.0,
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            : Form(
+                key: formKey,
+                child: Container(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Container(
+                                width: 100.0,
+                                color: _color,
+                                child: Center(
+                                  child: Text(
+                                    '$statusPercentageValue%',
+                                    style: TextStyle(
+                                        fontSize: 28.0, color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Expanded(
+                                child: Column(
+                                  children: <Widget>[
+                                    DropdownButtonFormField(
+                                      validator: (Party? value) {
+                                        if (value == null || value.id == 0) {
+                                          return '* கட்சியை தேர்ந்தெடுக்கவும்';
+                                        } else {
+                                          return null;
+                                        }
+                                      },
+                                      decoration: InputDecoration(
+                                          enabled: true,
+                                          labelText: '* கட்சி',
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8))),
+                                      value: selectedParty,
+                                      items: _parties
+                                          .map((e) => DropdownMenuItem(
+                                                value: e,
+                                                child:
+                                                    Text(e.short.ta.toString()),
+                                              ))
+                                          .toList(),
+                                      onChanged: (Party? value) {
+                                        setState(() {
+                                          selectedParty = value!;
+                                        });
+                                      },
+                                      hint: Text('கட்சி'),
+                                    ),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    DropdownButtonFormField(
+                                      validator: (String? value) {
+                                        if (value == null || value == '0') {
+                                          return '* சதவீதம் தேர்ந்தெடுக்கவும்';
+                                        } else {
+                                          return null;
+                                        }
+                                      },
+                                      decoration: InputDecoration(
+                                          enabled: true,
+                                          labelText: '* சதவீதம்',
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8))),
+                                      value: statusPercentageValue,
+                                      items: statusPercentage
+                                          .map((e) => DropdownMenuItem(
+                                                value: e,
+                                                child: Text(e),
+                                              ))
+                                          .toList(),
+                                      onChanged: (String? value) {
+                                        setState(() {
+                                          statusPercentageValue = value!;
+                                        });
+                                      },
+                                      hint: Text('சதவீதம்'),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(16.0, 6.0, 16.0, 6.0),
+                        child: TextFormField(
+                          controller: commandController,
+                          maxLines: null,
+                          minLines: 3,
+                          decoration: InputDecoration(
+                              labelText: 'கருத்து',
+                              hintText: 'கருத்தை பதிவிடவும்...',
+                              enabled: true,
+                              border: OutlineInputBorder()),
+                        ),
+                      ),
+                      Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(16.0, 6.0, 16.0, 6.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                                onPressed: () {
+                                  if (phonenumberController?.text != null &&
+                                      phonenumberController?.text.length ==
+                                          10 &&
+                                      (RegExp('^[6-9]\\d{9}\$').hasMatch(
+                                          (phonenumberController?.text)!))) {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => Message(
+                                                  voter: widget.voter,
+                                                )));
+                                  }
+                                },
+                                icon: Icon(
+                                  Icons.whatsapp,
+                                  color: Colors.green,
+                                )),
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => History(
+                                              activities: _activities,
+                                              voter: widget.voter)));
+                                },
+                                child: Text('வரலாறு')),
+                            OutlinedButton(
+                              onPressed: () {
+                                if (formKey.currentState!.validate()) {
+                                  createVoterActivity();
+                                }
+                              },
+                              child: Text('சமர்ப்பி'),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                ]),
+                ),
+              ),
+        _isVoterLoading
+            ? Center(
+                child: CircularProgressIndicator(),
               )
-            ],
-          ),
-        ),
-        Container(
-          color: Color(0xffFFFFFF),
-          child: Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'Troop Information',
-                  style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+            : Form(
+                key: formKey2,
+                child: Container(
+                  color: Color(0xffFFFFFF),
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          'வாக்காளரின் தரவுகள்',
+                          style: TextStyle(
+                              fontSize: 18.0, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 16),
+                        TextField(
+                          decoration: InputDecoration(
+                              enabled: true,
+                              labelText: 'வாக்காளர் எண்',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8))),
+                          enabled: false,
+                          autofocus: false,
+                          controller: voterIdController,
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        TextField(
+                          decoration: InputDecoration(
+                              enabled: true,
+                              labelText: 'வாக்காளர் பெயர்',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8))),
+                          enabled: false,
+                          autofocus: false,
+                          controller: nameController,
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        TextField(
+                          decoration: InputDecoration(
+                              enabled: true,
+                              labelText: 'தந்தை/கணவர் பெயர்',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8))),
+                          enabled: false,
+                          autofocus: false,
+                          controller: fatherNameController,
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        TextFormField(
+                          keyboardType: TextInputType.phone,
+                          maxLength: 10,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'தொலைபேசி எண் தேவை';
+                            } else if (!RegExp('^[6-9]\\d{9}\$')
+                                .hasMatch(value)) {
+                              return 'சரியான தொலைபேசி எண்ணை பதிவிடவும்';
+                            } else {
+                              return null;
+                            }
+                          },
+                          decoration: InputDecoration(
+                              enabled: true,
+                              labelText: 'தொலைபேசி எண்',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8))),
+                          enabled: true,
+                          autofocus: false,
+                          controller: phonenumberController,
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        TextField(
+                          decoration: InputDecoration(
+                              enabled: true,
+                              labelText: 'விட்டு எண்',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8))),
+                          enabled: false,
+                          autofocus: false,
+                          controller: doorNoController,
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        TextField(
+                          decoration: InputDecoration(
+                              enabled: true,
+                              labelText: 'வயது',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8))),
+                          enabled: false,
+                          autofocus: false,
+                          controller: ageController,
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        TextField(
+                          decoration: InputDecoration(
+                              enabled: true,
+                              labelText: 'பாலினம்',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8))),
+                          enabled: false,
+                          autofocus: false,
+                          controller: sexController,
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        MaterialButton(
+                          minWidth: double.infinity,
+                          height: 46,
+                          color: Colors.blue,
+                          textColor: Colors.white,
+                          onPressed: () {
+                            if (formKey2.currentState!.validate()) {
+                              updatedVoter();
+                            }
+                          },
+                          child: const Text(
+                            'மேம்படுத்து',
+                            style: TextStyle(fontSize: 20.0),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                SizedBox(height: 16),
-                Text(
-                  'Ward',
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(
-                  height: 6,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: 'Ward'),
-                  enabled: !_status,
-                  autofocus: !_status,
-                  controller: wardController,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  'SubWard',
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(
-                  height: 6,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: 'SubWard'),
-                  enabled: !_status,
-                  autofocus: !_status,
-                  controller: subWardController,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  'VoterId',
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(
-                  height: 6,
-                ),
-                TextField(
-                  decoration:
-                      const InputDecoration(hintText: 'Enter Your Name'),
-                  enabled: !_status,
-                  autofocus: !_status,
-                  controller: voterIdController,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  'Name',
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(
-                  height: 6,
-                ),
-                TextField(
-                  decoration:
-                      const InputDecoration(hintText: 'Enter Your Name'),
-                  enabled: !_status,
-                  autofocus: !_status,
-                  controller: nameController,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  'FatherName',
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(
-                  height: 6,
-                ),
-                TextField(
-                  decoration:
-                      const InputDecoration(hintText: 'Enter Your FatherName'),
-                  enabled: !_status,
-                  autofocus: !_status,
-                  controller: fatherNameController,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  'Status',
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(
-                  height: 6,
-                ),
-                DropdownButtonFormField(
-                  value: statusValue,
-                  items: status
-                      .map((e) => DropdownMenuItem(
-                            value: e,
-                            child: Text(e),
-                          ))
-                      .toList(),
-                  onChanged: (String? value) {
-                    statusValue = value!;
-                  },
-                  hint: Text('Status'),
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  'Status Percentage',
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(
-                  height: 6,
-                ),
-                DropdownButtonFormField(
-                  value: statusPercentageValue,
-                  items: statusPercentage
-                      .map((e) => DropdownMenuItem(
-                            value: e,
-                            child: Text(e),
-                          ))
-                      .toList(),
-                  onChanged: (String? value) {
-                    setState(() {
-                      statusPercentageValue = value!;
-                    });
-                  },
-                  hint: Text('Status Percentage'),
-                ),
-                SizedBox(
-                  height: 20,
-                )
-              ],
-            ),
-          ),
-        )
+              )
       ],
     );
   }
 
-  Future<void> updateTroop() async {
-    if (statusValue.isNotEmpty && statusPercentageValue.isNotEmpty) {
+  createVoterActivity() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    Map<String, dynamic> data = {
+      'voterId': widget.voter.id,
+      'partyId': [selectedParty?.id],
+      'percentage': statusPercentageValue
+    };
+    if ((commandController?.text.isNotEmpty)!) {
+      data['command'] = commandController?.text;
+    }
+    try {
+      bool isSuccess = await remoteService.createVoterActivity(data);
+      if (isSuccess) {
+        getVoterActivity();
+        _updateSuccessMessage('வெற்றிகரமாக சேமிக்கப்பட்டதது');
+      }
+    } catch (e) {
       setState(() {
-        _status = false;
+        _isLoading = false;
       });
-      Map<String, dynamic> data = {
-        'id': widget.troop.id,
-        'status': statusValue.toUpperCase(),
-        'statusPercentage': int.parse(statusPercentageValue)
-      };
-      bool? isSuccess = await RemoteService.updateTroop(data);
-      if (isSuccess!) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Updated Successfully'),
-            duration: Duration(seconds: 3, milliseconds: 0)));
+      _updateSuccessMessage(e);
+    }
+  }
+
+  void _updateSuccessMessage(var e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.toString()),
+        duration: Duration(seconds: Constant.limit, milliseconds: 0)));
+  }
+
+  showAlertDialog(BuildContext context) {
+    Widget logout = TextButton(
+      child: Text('விடுவி'),
+      onPressed: () async {
+        Navigator.pop(context);
+        resignVoter();
+      },
+    );
+
+    Widget cancel = TextButton(
+        onPressed: () => Navigator.of(context).pop(), child: Text('இல்லை'));
+
+    AlertDialog alert = AlertDialog(
+      content: Text('உங்கள் வாக்காளர் பட்டியலில் இருந்து விடுவிக்க வேண்டுமா ?'),
+      actions: [cancel, logout],
+    );
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  Future<void> resignVoter() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      bool isSuccess = await remoteService.unAssignVoters({
+        'votersId': [widget.voter.id]
+      });
+      if (isSuccess) {
+        setState(() {
+          _isLoading = false;
+        });
         Navigator.pop(context);
       }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      _updateSuccessMessage(e);
+    }
+  }
+
+  Future<void> getParties() async {
+    try {
+      List<Party> parties = await remoteService.getParties();
+      setState(() {
+        _parties = List.of(_parties)..addAll(parties);
+      });
+      getVoterActivity();
+    } catch (e) {
+      _updateSuccessMessage(e);
+    }
+  }
+
+  Future<void> getVoterActivity() async {
+    setState(() {
+      _activities.clear();
+    });
+    try {
+      List<Activity> activities =
+          await remoteService.getVoterActivity(widget.voter.id);
+      if (activities.isNotEmpty) {
+        Party party = activities.reversed.toList()[0].partyId[0];
+        int index = 0;
+        for (Party pt in _parties) {
+          if (pt.short.ta == party.short.ta) {
+            _color =
+                pt.short.ta.toString() == 'நாதக' ? Colors.green : Colors.red;
+            index = _parties.indexOf(pt);
+            break;
+          }
+        }
+        setState(() {
+          _activities = activities.reversed.toList();
+          selectedParty = _parties[index];
+          statusPercentageValue = activities.reversed.toList()[0].percentage;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      _updateSuccessMessage(e);
+    }
+  }
+
+  Future<void> updatedVoter() async {
+    setState(() {
+      _isVoterLoading = true;
+    });
+
+    Map<String, dynamic> data = {
+      'id': widget.voter.id,
+      'phone': phonenumberController?.text.toString()
+    };
+
+    try {
+      bool isSuccess = await remoteService.updateVoter(data);
+      if (isSuccess) {
+        setState(() {
+          _isVoterLoading = false;
+          widget.voter.phone = (phonenumberController?.text)!;
+        });
+        _updateSuccessMessage('வெற்றிகரமாக சேமிக்கப்பட்டதது');
+      } else {
+        setState(() {
+          _isVoterLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isVoterLoading = false;
+      });
+      _updateSuccessMessage(e);
     }
   }
 }

@@ -1,138 +1,405 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:Mugavan/models/agent.dart';
-import 'package:Mugavan/utils/Constant.dart';
+import 'package:Mugavan/models/assembly.dart';
+import 'package:Mugavan/models/booth.dart';
+import 'package:Mugavan/models/district.dart';
+import 'package:Mugavan/models/localbody.dart';
+import 'package:Mugavan/models/parliament.dart';
+import 'package:Mugavan/models/party.dart';
+import 'package:Mugavan/models/province.dart';
+import 'package:Mugavan/models/taluk.dart';
+import 'package:Mugavan/models/voter.dart';
+import 'package:Mugavan/models/ward.dart';
+import 'package:Mugavan/utils/constant.dart';
 import 'package:Mugavan/utils/shared.dart';
 import 'package:http/http.dart' as http;
 
-import '../models/People.dart';
-import '../models/Troop.dart';
+import '../models/activity.dart';
+import '../models/country.dart';
 
 class RemoteService {
-  static var client = http.Client();
+  final client = http.Client();
 
-  // display_people() async {
-  //   var client = http.Client();
-  //   var accessToken = await Share_pref().get_accessToken();
-  //
-  //   var uri = Uri.parse(
-  //       'https://dev-sangam.gateway.apiplatform.io/v1/getAssignedPeople');
-  //
-  //   var response = await client.get(uri, headers: {
-  //     'pkey': '3fdabdac7be3f1483fd675c4334d4a72',
-  //     'apikey': ' 0tF4kEqjlaKiGeZfN1vOSoSMtwHRqdNH',
-  //     'Content-Type': 'application/json',
-  //     'accessToken': accessToken
-  //   });
-  //
-  //   if (response.statusCode == 200) {
-  //     var json = response.body;
-  //     print('json');
-  //     print(json);
-  //     return displayFromJson(json);
-  //   }
-  // }
-
-  static Future<bool> createAccount(Map<String, String> data) async {
-    var response = await client.post(Uri.parse('${Constant.url}/v1/addAgent'),
-        body: json.encode(data), headers: Constant.headers);
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      return false;
+  Future<bool> createAccount(Map<String, dynamic> data) async {
+    try {
+      final response = await client.post(
+          Uri.parse('${Constant.url}/v1/addAgent'),
+          body: json.encode(data),
+          headers: Constant.headers);
+      if (response.statusCode == 200) {
+        return true;
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
     }
   }
 
-  static Future<Map<String, dynamic>?> authOTP(
-      Map<String, dynamic> data) async {
-    var response = await client.patch(Uri.parse('${Constant.url}/v1/agentAuth'),
-        body: json.encode(data), headers: Constant.headers);
-    if (response.statusCode == 201) {
-      await Shared.setShared(jsonDecode(response.body));
-      return jsonDecode(response.body);
-    } else {
-      return null;
+  Future<Map<String, dynamic>> authOTP(Map<String, dynamic> data) async {
+    try {
+      final response = await client.patch(
+          Uri.parse('${Constant.url}/v1/agentAuth'),
+          body: json.encode(data),
+          headers: Constant.headers);
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
     }
   }
 
-  static Future<Agent?> getAgent() async {
-    Map<String, String> headers = Constant.headers;
-    headers['accessToken'] = await Shared.getAccessToken();
-    var response = await client.get(Uri.parse('${Constant.url}/v1/getAgent'),
-        headers: headers);
-    if (response.statusCode == 200) {
-      return agentFromJson(response.body).elementAt(0);
-    } else {
-      return null;
+  Future<List<Country>> getCountries() async {
+    try {
+      final response = await client.get(
+          Uri.parse('${Constant.url}/v1/country?id=105'),
+          headers: Constant.headers);
+      if (response.statusCode == 200) {
+        return countryFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
     }
   }
 
-  static Future<bool?> updateAgent(Map<String, dynamic> data) async {
-    Map<String, String> headers = Constant.headers;
-    headers['accessToken'] = await Shared.getAccessToken();
-    var response = await client.patch(
-        Uri.parse('${Constant.url}/v1/updateAgent'),
-        body: json.encode(data),
-        headers: headers);
-    if (response.statusCode == 200) {
-      await Shared.updatedSession();
-      return true;
-    } else {
-      return null;
+  Future<List<Province>> getProvinces() async {
+    try {
+      final response = await client.get(
+          Uri.parse('${Constant.url}/v1/state?id=30'),
+          headers: Constant.headers);
+      if (response.statusCode == 200) {
+        return provinceFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
     }
   }
 
-  static Future<List<Troop>?> getTroops() async {
-    Map<String, String> headers = Constant.headers;
-    headers['accessToken'] = await Shared.getAccessToken();
-    var response = await client.get(
-        Uri.parse('${Constant.url}/v1/getAssignedPeople'),
-        headers: headers);
-    if (response.statusCode == 200) {
-      return troopFromJson(response.body);
-    } else {
-      return null;
+  Future<List<District>> getDistricts() async {
+    try {
+      final response = await client.get(
+          Uri.parse('${Constant.url}/v1/district?stateId=30'),
+          headers: Constant.headers);
+      if (response.statusCode == 200) {
+        return districtFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
     }
   }
 
-  static Future<bool?> updateTroop(Map<String, dynamic> data) async {
-    Map<String, String> headers = Constant.headers;
-    headers['accessToken'] = await Shared.getAccessToken();
-    var response = await client.patch(
-        Uri.parse('${Constant.url}/v1/update-troop'),
-        body: json.encode(data),
-        headers: headers);
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      return null;
+  Future<List<Taluk>> getTaluks(districtId) async {
+    try {
+      final response = await client.get(
+          Uri.parse('${Constant.url}/v1/taluk?districtId=$districtId'),
+          headers: Constant.headers);
+      if (response.statusCode == 200) {
+        return talukFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
     }
   }
 
-  static Future<List<People>?> getPeoples() async {
-    Map<String, String> headers = Constant.headers;
-    headers['accessToken'] = await Shared.getAccessToken();
-    var response = await client
-        .get(Uri.parse('${Constant.url}/v1/getWardPeople'), headers: headers);
-    if (response.statusCode == 200) {
-      return peopleFromJson(response.body);
-    } else {
-      return null;
+  Future<List<Parliament>> getParliaments(districtId) async {
+    try {
+      final response = await client.get(
+          Uri.parse('${Constant.url}/v1/parliament?districtId=$districtId'),
+          headers: Constant.headers);
+      if (response.statusCode == 200) {
+        return parliamentFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
     }
   }
 
-  static Future<bool?> assignPeoples(Map<String, dynamic> data) async {
-    Map<String, String> headers = Constant.headers;
-    headers['accessToken'] = await Shared.getAccessToken();
-    var response = await client.patch(
-        Uri.parse('${Constant.url}/v1/assignAgentForPeople'),
-        body: json.encode(data),
-        headers: headers);
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      return null;
+  Future<List<Assembly>> getAssemblies(districtId) async {
+    try {
+      final response = await client.get(
+          Uri.parse('${Constant.url}/v1/assembly?districtId=$districtId'),
+          headers: Constant.headers);
+      if (response.statusCode == 200) {
+        return assemblyFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Localbody>> getLocalbodies(districtId) async {
+    try {
+      final response = await client.get(
+          Uri.parse('${Constant.url}/v1/localbody?districtId=$districtId'),
+          headers: Constant.headers);
+      if (response.statusCode == 200) {
+        return localbodyFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Ward>> getWards(localbodyId) async {
+    try {
+      final response = await client.get(
+          Uri.parse('${Constant.url}/v1/ward?localbodyId=$localbodyId'),
+          headers: Constant.headers);
+      if (response.statusCode == 200) {
+        return wardFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Booth>> getBooths(Ward ward) async {
+    try {
+      final response = await client.get(
+          Uri.parse('${Constant.url}/v1/booth?wardId=${ward.id}'),
+          headers: Constant.headers);
+      if (response.statusCode == 200) {
+        return boothFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Voter>> getVoter(String voterId) async {
+    try {
+      final response = await client.get(
+          Uri.parse('${Constant.url}/v1/voter?voterId=$voterId'),
+          headers: Constant.headers);
+      if (response.statusCode == 200) {
+        return voterFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Voter>> getVoterWithPhone(String phone) async {
+    try {
+      final response = await client.get(
+          Uri.parse('${Constant.url}/v1/voter?phone=$phone'),
+          headers: Constant.headers);
+      if (response.statusCode == 200) {
+        return voterFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> createAgent(Map<String, dynamic> data) async {
+    try {
+      Map<String, String> headers = Constant.headers;
+      headers['accessToken'] = await Shared.getAccessToken();
+      final response = await client.patch(
+          Uri.parse('${Constant.url}/v1/createAgent'),
+          body: json.encode(data),
+          headers: headers);
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Voter>> getUnassingedVotersWithWard() async {
+    try {
+      Voter voter = await Shared.getData();
+      final response = await client.get(
+          Uri.parse(
+              '${Constant.url}/v1/voter?wardId=${voter.wardId}&isTaken=false&isAgent=false'),
+          headers: Constant.headers);
+      if (response.statusCode == 200) {
+        return voterFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<bool> assignVoters(Map<String, dynamic> data) async {
+    try {
+      Map<String, String> headers = Constant.headers;
+      headers['accessToken'] = await Shared.getAccessToken();
+      var response = await client.patch(
+          Uri.parse('${Constant.url}/v1/assing-me'),
+          body: json.encode(data),
+          headers: headers);
+      if (response.statusCode == 200) {
+        return true;
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<bool> unAssignVoters(Map<String, dynamic> data) async {
+    try {
+      Map<String, String> headers = Constant.headers;
+      headers['accessToken'] = await Shared.getAccessToken();
+      var response = await client.patch(
+          Uri.parse('${Constant.url}/v1/resign-me'),
+          body: json.encode(data),
+          headers: headers);
+      if (response.statusCode == 200) {
+        return true;
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Voter>> getAassingedVotersWithWard() async {
+    try {
+      Map<String, String> headers = Constant.headers;
+
+      await Shared.getAccessToken()
+          .then((value) => {headers['accessToken'] = value});
+      var response = await client
+          .get(Uri.parse('${Constant.url}/v1/getMyVoters'), headers: headers);
+      if (response.statusCode == 200) {
+        return voterFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Activity>> getVoterActivity(var id) async {
+    try {
+      Map<String, String> headers = Constant.headers;
+
+      var response = await client.get(
+          Uri.parse('${Constant.url}/v1/voteractivity?voterId=$id'),
+          headers: headers);
+      if (response.statusCode == 200) {
+        return activityFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<bool> createVoterActivity(Map<String, dynamic> data) async {
+    try {
+      Map<String, String> headers = Constant.headers;
+      headers['accessToken'] = await Shared.getAccessToken();
+      var response = await client.post(
+          Uri.parse('${Constant.url}/v1/create-voter-activity'),
+          body: json.encode(data),
+          headers: headers);
+      if (response.statusCode == 201) {
+        return true;
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<bool> updateVoterActivity(Map<String, dynamic> data) async {
+    try {
+      Map<String, String> headers = Constant.headers;
+      headers['accessToken'] = await Shared.getAccessToken();
+      var response = await client.patch(
+          Uri.parse('${Constant.url}/v1/update-voter-activity'),
+          body: json.encode(data),
+          headers: headers);
+      if (response.statusCode == 200) {
+        return true;
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Voter>> getAgent() async {
+    try {
+      Map<String, String> headers = Constant.headers;
+      headers['accessToken'] = await Shared.getAccessToken();
+      var response = await client.get(Uri.parse('${Constant.url}/v1/get-agent'),
+          headers: headers);
+      if (response.statusCode == 200) {
+        return voterFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Party>> getParties() async {
+    try {
+      Map<String, String> headers = Constant.headers;
+      var response = await client.get(
+          Uri.parse('${Constant.url}/v1/electionparties'),
+          headers: headers);
+      if (response.statusCode == 200) {
+        return partyFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> createVoter(Map<String, dynamic> data) async {
+    try {
+      Map<String, String> headers = Constant.headers;
+      headers['accessToken'] = await Shared.getAccessToken();
+      var response = await client.post(
+          Uri.parse('${Constant.url}/v1/create-voter'),
+          body: json.encode(data),
+          headers: headers);
+      if (response.statusCode == 201) {
+        return jsonDecode(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<bool> updateVoter(Map<String, dynamic> data) async {
+    try {
+      Map<String, String> headers = Constant.headers;
+      headers['accessToken'] = await Shared.getAccessToken();
+      var response = await client.patch(
+          Uri.parse('${Constant.url}/v1/update-voter'),
+          body: json.encode(data),
+          headers: headers);
+      if (response.statusCode == 200) {
+        return true;
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
     }
   }
 }

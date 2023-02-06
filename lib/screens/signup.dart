@@ -1,11 +1,9 @@
 import 'package:Mugavan/screens/auth.dart';
 import 'package:Mugavan/service/remote_service.dart';
+import 'package:Mugavan/utils/shared.dart';
 import 'package:flutter/material.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
 
-import '../../flutter_flow/flutter_flow_icon_button.dart';
-import '../../flutter_flow/flutter_flow_theme.dart';
-import '../../flutter_flow/flutter_flow_widgets.dart';
+import '../utils/constant.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({Key? key}) : super(key: key);
@@ -15,21 +13,24 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
-  var _isShowButton = true;
+  RemoteService remoteService = RemoteService();
 
-  var phonenumber = '';
-  TextEditingController? phoneNumberController;
+  var _isLoading = false;
+
+  TextEditingController? phoneController;
+
+  final formKey = GlobalKey<FormState>();
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    phoneNumberController = TextEditingController();
+    phoneController = TextEditingController();
   }
 
   @override
   void dispose() {
-    phoneNumberController?.dispose();
+    phoneController?.dispose();
     super.dispose();
   }
 
@@ -37,117 +38,115 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
       appBar: AppBar(
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         automaticallyImplyLeading: false,
-        // leading: FlutterFlowIconButton(
-        //   borderColor: Colors.transparent,
-        //   borderRadius: 30,
-        //   borderWidth: 1,
-        //   buttonSize: 60,
-        //   icon: Icon(
-        //     Icons.arrow_back_rounded,
-        //     color: FlutterFlowTheme.of(context).secondaryText,
-        //     size: 30,
-        //   ),
-        //   onPressed: () async {},
-        // ),
-        title: Text(
-          'Phone Sign In',
-          style: FlutterFlowTheme.of(context).title3.override(
-                fontFamily: 'Outfit',
-              ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text(
+              'முகவர் கணக்கு',
+              style: TextStyle(fontSize: 18.0),
+            ),
+          ],
         ),
-        actions: const [],
         centerTitle: false,
-        elevation: 0,
+        elevation: 1,
       ),
-      body: Column(
-        mainAxisSize: MainAxisSize.max,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Expanded(
-                child: Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 0),
-                    child: Text(
-                      'Type in your phone number below to register.',
-                      style: FlutterFlowTheme.of(context).bodyText2.override(
-                            fontFamily: 'Outfit',
-                          ),
-                    )),
-              ),
-            ],
-          ),
-          Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(16, 20, 16, 0),
-              child: IntlPhoneField(
-                decoration: const InputDecoration(
-                  labelText: 'Phone Number',
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.purple,
-                    ),
-                  ),
-                ),
-                initialCountryCode: 'IN',
-                onChanged: (phone) {
-                  phonenumber = phone.number;
+      body: showBody(),
+    );
+  }
+
+  Widget showBody() {
+    return Padding(
+      padding: EdgeInsets.all(8.0),
+      child: Form(
+        key: formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('கணக்கை உருவாக்க அல்லது உள்செல்ல தொலைபேசியை பதிவிடவும்'),
+            SizedBox(
+              height: 20,
+            ),
+            TextFormField(
+                keyboardType: TextInputType.phone,
+                maxLength: 10,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'தொலைபேசி எண் தேவை';
+                  } else if (!RegExp('^[6-9]\\d{9}\$').hasMatch(value)) {
+                    return 'சரியான தொலைபேசி எண்ணை பதிவிடவும்';
+                  } else {
+                    return null;
+                  }
                 },
-              )),
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(10, 44, 10, 44),
-            child: _isShowButton
-                ? FFButtonWidget(
-                    onPressed: () async {
-                      createAccount();
+                controller: phoneController,
+                decoration: InputDecoration(
+                    hintText: 'தொலைபேசி எண்னை பதிவிடவும்',
+                    labelText: 'தொலைபேசி எண்',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)))),
+            SizedBox(
+              height: 40.0,
+            ),
+            _isLoading
+                ? CircularProgressIndicator()
+                : MaterialButton(
+                    padding: EdgeInsets.all(16.0),
+                    minWidth: double.infinity,
+                    height: 46,
+                    color: Colors.blue,
+                    textColor: Colors.white,
+                    onPressed: () {
+                      if (formKey.currentState!.validate()) {
+                        String? phone = phoneController?.text.toString()!;
+                        Shared.setPhonenumber(phone!);
+                        createAccount();
+                      }
                     },
-                    text: 'Sign in ',
-                    options: FFButtonOptions(
-                      width: double.infinity,
-                      height: 50,
-                      color: const Color(0xFF141618),
-                      textStyle:
-                          FlutterFlowTheme.of(context).subtitle2.override(
-                                fontFamily: 'Outfit',
-                                color: const Color(0xFFF1F4F8),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                      elevation: 2,
-                      borderSide: const BorderSide(
-                        color: Colors.transparent,
-                        width: 1,
-                      ),
-                      borderRadius: 12,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0)),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text(
+                          'சமர்ப்பி',
+                          style: TextStyle(fontSize: 18.0),
+                        ),
+                        Icon(Icons.arrow_forward)
+                      ],
                     ),
                   )
-                : CircularProgressIndicator(),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   void createAccount() async {
     setState(() {
-      _isShowButton = false;
+      _isLoading = true;
     });
-    Map<String, String> data = {'phone': phonenumber};
 
-    bool isSucess = await RemoteService.createAccount(data);
-
-    if (isSucess) {
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => Auth(phonenumber: phonenumber)));
-    } else {
+    try {
+      bool isSuccess = await remoteService
+          .createAccount({'phone': phoneController?.text.toString()});
+      if (isSuccess) {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => Auth()));
+      }
+    } catch (e) {
       setState(() {
-        _isShowButton = true;
+        _isLoading = false;
       });
-      print('error');
+      _updateSuccessMessage(e);
     }
+  }
+
+  void _updateSuccessMessage(var e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.toString()),
+        duration: Duration(seconds: Constant.limit, milliseconds: 0)));
   }
 }

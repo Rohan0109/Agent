@@ -1,9 +1,10 @@
-import 'package:Mugavan/models/Troop.dart';
+import 'package:Mugavan/models/voter.dart';
 import 'package:Mugavan/screens/peoples.dart';
 import 'package:Mugavan/screens/update_troop.dart';
 import 'package:flutter/material.dart';
 
 import '../service/remote_service.dart';
+import '../utils/constant.dart';
 
 class MyPeopleList extends StatefulWidget {
   const MyPeopleList({Key? key}) : super(key: key);
@@ -12,38 +13,57 @@ class MyPeopleList extends StatefulWidget {
   State<MyPeopleList> createState() => _MyPeopleListState();
 }
 
-class _MyPeopleListState extends State<MyPeopleList> {
-  List<Troop>? troops;
-  bool isLoading = false;
+class _MyPeopleListState extends State<MyPeopleList>
+    with AutomaticKeepAliveClientMixin {
+  RemoteService remoteService = RemoteService();
+
+  List<Voter>? _voters;
+  bool _isLoading = true;
+
+  final List<String> _tSex = ['ஆண்', 'பெண்', 'மூன்றாம் பாலினத்தவர்'];
+  final List<String> _eSex = ['male', 'female', 'transgender'];
 
   @override
   void initState() {
+    getMyVoters();
     super.initState();
-    getTroops();
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: true,
-        title: Text('People List'),
-        actions: const [],
+        title: Text(Constant.voter),
+        actions: [
+          IconButton(
+              onPressed: () {
+                showSearch(
+                    context: context, delegate: MySearchDelegate(_voters!));
+              },
+              icon: Icon(Icons.search)),
+          IconButton(
+              onPressed: () {
+                getMyVoters();
+              },
+              icon: Icon(Icons.refresh))
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
-        child: isLoading
-            ? getOrderListWidget()
-            : const Center(
+        child: _isLoading
+            ? const Center(
                 child: CircularProgressIndicator(),
-              ),
+              )
+            : getOrderListWidget(),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
         onPressed: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => Peoples()));
+          _navigationToPeoplePage();
         },
         child: Icon(Icons.add),
       ),
@@ -51,20 +71,30 @@ class _MyPeopleListState extends State<MyPeopleList> {
   }
 
   Widget getOrderListWidget() {
-    if (troops?.isNotEmpty ?? false) {
-      var listView = ListView.builder(
-        itemCount: troops?.length,
+    if (_voters?.isNotEmpty ?? false) {
+      var listView = GridView.builder(
+        gridDelegate:
+            SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+        itemCount: _voters?.length,
         itemBuilder: (BuildContext context, int index) {
+          var _isShow = _voters?[index].isTaken;
           return GestureDetector(
+              onLongPress: () {
+                // setState(() {
+                //   _isShow =
+                // });
+              },
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => UpdateTroop(troop: troops![index]),
+                    builder: (context) => UpdateTroop(voter: _voters![index]),
                   ),
                 );
               },
               child: Card(
+                elevation: 1,
+                color: Color.fromRGBO(33, 150, 243, 1.0),
                 shape: RoundedRectangleBorder(
                   side: BorderSide(
                     color: Colors.blue.shade50,
@@ -73,37 +103,41 @@ class _MyPeopleListState extends State<MyPeopleList> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              troops?[index].name ?? '',
-                              style: TextStyle(fontSize: 18.0),
-                            ),
-                            Text(
-                              changeTimeStampToDate(
-                                      troops?[index].createdAt ?? '')
-                                  .substring(0, 11),
-                              style: TextStyle(fontSize: 18.0),
-                            ),
-                          ],
-                        ),
+                      Text(
+                        (_voters?[index]?.voterId.toString())!,
+                        style: TextStyle(fontSize: 26.0, color: Colors.white),
                       ),
-                      Column(
-                        children: [],
+                      Text(
+                        (_voters?[index]?.name.ta.toString().toUpperCase())!,
+                        style: TextStyle(fontSize: 20.0, color: Colors.white),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: const [],
-                        ),
+                      Text(
+                        (_voters?[index]
+                            ?.sentinal
+                            .ta
+                            .toString()
+                            .toUpperCase())!,
+                        style: TextStyle(fontSize: 20.0, color: Colors.white),
+                      ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Text(
+                            '${_tSex[_eSex.indexOf((_voters?[index]?.sex.toString().toLowerCase())!)]}',
+                            style:
+                                TextStyle(fontSize: 14.0, color: Colors.white),
+                          ),
+                          Text(
+                            'வயது : ${(_voters?[index]?.age.toString())!}',
+                            style:
+                                TextStyle(fontSize: 14.0, color: Colors.white),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -134,7 +168,25 @@ class _MyPeopleListState extends State<MyPeopleList> {
                       width: 300,
                     ),
                     SizedBox(height: 10),
-                    Text("No Troop Found")
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text('${Constant.voter} .${Constant.no}'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                          child: GestureDetector(
+                            onTap: () {
+                              _navigationToPeoplePage();
+                            },
+                            child: Text(
+                              Constant.join,
+                              style:
+                                  TextStyle(fontSize: 18.0, color: Colors.blue),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -147,20 +199,101 @@ class _MyPeopleListState extends State<MyPeopleList> {
 
   Future<void> _refresh() async {
     setState(() {
-      troops?.clear();
+      _isLoading = true;
+      _voters?.clear();
     });
-    getTroops();
+    getMyVoters();
   }
 
-  Future<void> getTroops() async {
-    List<Troop>? troops = await RemoteService.getTroops();
+  getMyVoters() async {
     setState(() {
-      this.troops = troops;
-      this.isLoading = true;
+      _isLoading = true;
     });
+    try {
+      List<Voter> voters = await remoteService.getAassingedVotersWithWard();
+      setState(() {
+        _isLoading = false;
+        _voters = voters;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      _updateSuccessMessage(e);
+    }
   }
 
   String changeTimeStampToDate(int timeStamp) {
     return DateTime.fromMillisecondsSinceEpoch(timeStamp).toString();
+  }
+
+  void _navigationToPeoplePage() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => Peoples()));
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+
+  void _updateSuccessMessage(var e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.toString()),
+        duration: Duration(seconds: Constant.limit, milliseconds: 0)));
+  }
+}
+
+class MySearchDelegate extends SearchDelegate {
+  late List<Voter> _voters;
+  late String selectedResult;
+
+  MySearchDelegate(this._voters);
+
+  @override
+  List<Widget>? buildActions(BuildContext context) {
+    IconButton(
+      icon: Icon(Icons.clear),
+      onPressed: () {
+        if (query.isEmpty) {
+          close(context, null);
+        } else {
+          query = '';
+        }
+      },
+    );
+  }
+
+  @override
+  Widget? buildLeading(BuildContext context) {
+    IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, null);
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return Container(
+      child: Center(
+        child: Text(selectedResult),
+      ),
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    List<Voter> suggestedVoters = [];
+    query.isEmpty
+        ? suggestedVoters = _voters
+        : suggestedVoters.addAll(_voters.where(
+            (element) =>
+                element.name.ta.toLowerCase().contains(query.toLowerCase()),
+          ));
+
+    return ListView.builder(
+        itemCount: suggestedVoters.length,
+        itemBuilder: (context, position) => ListTile(
+              title: Text(suggestedVoters[position].name.ta.toString()),
+            ));
   }
 }
