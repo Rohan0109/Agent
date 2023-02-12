@@ -1,9 +1,10 @@
 import 'package:Mugavan/models/activity.dart';
 import 'package:Mugavan/models/party.dart' as py;
 import 'package:Mugavan/screens/history.dart';
-import 'package:Mugavan/screens/message.dart';
+import 'package:Mugavan/screens/whatsup.dart';
 import 'package:Mugavan/service/remote_service.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/party.dart';
 import '../models/voter.dart';
@@ -139,7 +140,7 @@ class _UpdateTroopState extends State<UpdateTroop> {
     return Column(
       children: <Widget>[
         _isLoading
-            ? Container(
+            ? SizedBox(
                 height: 300.0,
                 child: Center(
                   child: CircularProgressIndicator(),
@@ -260,6 +261,28 @@ class _UpdateTroopState extends State<UpdateTroop> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            Visibility(
+                              visible: false,
+                              child: IconButton(
+                                  onPressed: () {
+                                    if (phonenumberController?.text != null &&
+                                        phonenumberController?.text.length ==
+                                            10 &&
+                                        (RegExp('^[6-9]\\d{9}\$').hasMatch(
+                                            (phonenumberController?.text)!))) {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => WhatsUp(
+                                                    voter: widget.voter,
+                                                  )));
+                                    }
+                                  },
+                                  icon: Icon(
+                                    Icons.whatsapp,
+                                    color: Colors.green,
+                                  )),
+                            ),
                             IconButton(
                                 onPressed: () {
                                   if (phonenumberController?.text != null &&
@@ -267,17 +290,13 @@ class _UpdateTroopState extends State<UpdateTroop> {
                                           10 &&
                                       (RegExp('^[6-9]\\d{9}\$').hasMatch(
                                           (phonenumberController?.text)!))) {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => Message(
-                                                  voter: widget.voter,
-                                                )));
+                                    _makingPhoneCall(
+                                        phonenumberController?.text!);
                                   }
                                 },
                                 icon: Icon(
-                                  Icons.whatsapp,
-                                  color: Colors.green,
+                                  Icons.phone,
+                                  color: Colors.blueAccent,
                                 )),
                             TextButton(
                                 onPressed: () {
@@ -609,6 +628,15 @@ class _UpdateTroopState extends State<UpdateTroop> {
         _isVoterLoading = false;
       });
       _updateSuccessMessage(e);
+    }
+  }
+
+  Future<void> _makingPhoneCall(var phone) async {
+    var url = Uri.parse('tel:+91$phone');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      throw 'Could not launch $url';
     }
   }
 }

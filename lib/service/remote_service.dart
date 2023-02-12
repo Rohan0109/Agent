@@ -5,6 +5,7 @@ import 'package:Mugavan/models/assembly.dart';
 import 'package:Mugavan/models/booth.dart';
 import 'package:Mugavan/models/district.dart';
 import 'package:Mugavan/models/localbody.dart';
+import 'package:Mugavan/models/message.dart';
 import 'package:Mugavan/models/parliament.dart';
 import 'package:Mugavan/models/party.dart';
 import 'package:Mugavan/models/province.dart';
@@ -225,6 +226,7 @@ class RemoteService {
   Future<List<Voter>> getUnassingedVotersWithWard() async {
     try {
       Voter voter = await Shared.getData();
+      print(voter.wardId);
       final response = await client.get(
           Uri.parse(
               '${Constant.url}/v1/voter?wardId=${voter.wardId}&isTaken=false&isAgent=false'),
@@ -396,6 +398,22 @@ class RemoteService {
           headers: headers);
       if (response.statusCode == 200) {
         return true;
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Message>> getMessages(int id) async {
+    try {
+      Map<String, String> headers = Constant.headers;
+      headers['accessToken'] = await Shared.getAccessToken();
+      var response = await client.get(
+          Uri.parse('${Constant.url}/v1/get-voter-message?id=$id'),
+          headers: headers);
+      if (response.statusCode == 200) {
+        return messageFromJson(response.body);
       }
       throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
     } catch (e) {
