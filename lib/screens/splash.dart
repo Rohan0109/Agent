@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:Mugavan/screens/dashboard.dart';
-import 'package:Mugavan/screens/new_profile.dart';
-import 'package:Mugavan/screens/signup.dart';
+import 'package:Mugavan/screens/select_geo_location.dart';
+import 'package:Mugavan/screens/auth.dart';
 import 'package:Mugavan/utils/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,15 +35,15 @@ class _SplashState extends State<Splash> {
 
   route() {
     if (prefs.getBool('session') != null && prefs.getBool('session') == false) {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => const NewProfile()));
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context) => const SelectGeoLocation()));
     } else if (prefs.getBool('session') != null &&
         prefs.getBool('session') == true) {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => const Dashboard()));
     } else {
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => const SignUp()));
+          context, MaterialPageRoute(builder: (context) => const Auth()));
     }
   }
 
@@ -73,7 +73,7 @@ class _SplashState extends State<Splash> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(
-                        'images/logo.png',
+                        'assets/images/logo.png',
                         width: 300,
                       ),
                     ],

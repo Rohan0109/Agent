@@ -36,9 +36,10 @@ class _HistoryState extends State<History> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       key: scaffoldKey,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: true,
-        title: Text(_voter.name.ta),
+        title: Text('வரலாறு'),
         actions: [],
         centerTitle: false,
         elevation: 0,
@@ -51,7 +52,7 @@ class _HistoryState extends State<History> {
   }
 
   Widget getOrderListWidget() {
-    if (_activities?.isNotEmpty ?? false) {
+    if (_activities.isNotEmpty) {
       var listView = ListView.builder(
         itemCount: _activities?.length,
         itemBuilder: (BuildContext context, int index) {
@@ -78,10 +79,10 @@ class _HistoryState extends State<History> {
                         width: 30,
                         height: 30,
                         child: Card(
-                          color: (_activities?[index].partyId[0].short.ta ==
-                                  'நாதக')
-                              ? Colors.green
-                              : Colors.red,
+                          color:
+                              (_activities[index].partyId[0].short.ta == 'நாதக')
+                                  ? Colors.green
+                                  : Colors.red,
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               color: Colors.blue.shade50,
@@ -91,15 +92,14 @@ class _HistoryState extends State<History> {
                         ),
                       ),
                       Text(
-                        changeTimeStampToDate(
-                            (_activities?[index]?.createdAt)!),
+                        changeTimeStampToDate(_activities[index].createdAt),
                         style: TextStyle(fontSize: 16.0, color: Colors.black54),
                       ),
                       SizedBox(
                         width: 50,
                       ),
                       Text(
-                        'முகவர் ${(_activities?[index]?.agentId.toString())!}',
+                        'முகவர் ${(_activities[index].agentId.toString())}',
                         style: TextStyle(
                             fontSize: 16.0,
                             color: Colors.blue,
@@ -164,15 +164,13 @@ class _HistoryState extends State<History> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      'images/empty.png',
+                      'assets/images/empty.png',
                       width: 300,
                     ),
                     SizedBox(height: 10),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.start,
-                      children: const [
-                        Text('${Constant.voter} .${Constant.no}')
-                      ],
+                      children: const [Text('வரலாறு ${Constant.no}.')],
                     ),
                   ],
                 ),

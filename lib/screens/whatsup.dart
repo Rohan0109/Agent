@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:Mugavan/models/message.dart';
+import 'package:Mugavan/utils/shared.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -22,18 +24,27 @@ class _WhatsUpState extends State<WhatsUp> {
   List<Message> _messages = [];
   RemoteService remoteService = RemoteService();
 
+  TextEditingController? messageController;
+
   Future<void> _refresh() async {
     setState(() {
-      _isLoading:
-      true;
+      _isLoading = true;
       _messages.clear();
     });
+    getMessages();
   }
 
   @override
   void initState() {
     super.initState();
+    messageController = TextEditingController();
     getMessages();
+  }
+
+  @override
+  void dispose() {
+    messageController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -42,14 +53,6 @@ class _WhatsUpState extends State<WhatsUp> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add_circle, color: Colors.white),
-            onPressed: () {
-              showAlertDialog(context);
-            },
-          ),
-        ],
         elevation: 0,
         title: const Text(
           'பகிரி',
@@ -59,42 +62,90 @@ class _WhatsUpState extends State<WhatsUp> {
         onRefresh: _refresh,
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : getMessageWidgets(),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.add),
+            : Column(
+                children: [
+                  Expanded(child: getMessageWidgets()),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                  16.0, 6.0, 16.0, 6.0),
+                              child: TextFormField(
+                                autofocus: true,
+                                controller: messageController,
+                                maxLines: null,
+                                minLines: 1,
+                                decoration: InputDecoration(
+                                    hintText: 'கருத்தை பதிவிடவும்...',
+                                    enabled: true,
+                                    border: OutlineInputBorder()),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Ink(
+                            decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.blue, width: 5),
+                                color: Colors.blueAccent,
+                                borderRadius: BorderRadius.circular(50.0)),
+                            child: InkWell(
+                                onTap: () {
+                                  sendMessages();
+                                },
+                                borderRadius: BorderRadius.circular(100.0),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Icon(Icons.send,
+                                      size: 30.0, color: Colors.white),
+                                )),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
 
   Widget getMessageWidgets() {
-    if (_messages?.isNotEmpty ?? false) {
-      var listView = GridView.builder(
-        itemCount: _messages?.length,
-        gridDelegate:
-            SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+    if (_messages.isNotEmpty) {
+      var listView = ListView.builder(
+        itemCount: _messages.length,
         itemBuilder: (BuildContext context, int index) {
           return GestureDetector(
               onTap: () {},
               child: Card(
-                elevation: 1,
-                color: Color.fromRGBO(33, 150, 243, 1.0),
+                color: Constant.cardColor,
                 shape: RoundedRectangleBorder(
                   side: BorderSide(
-                    color: Colors.blue.shade50,
+                    color: Colors.black12,
                   ),
                   borderRadius: BorderRadius.circular(15.0),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      AutoSizeText(
+                        _messages[index].message.toString() ?? '',
+                        style: TextStyle(fontSize: 18.0, color: Colors.black54),
+                      ),
                       Text(
-                        (_messages?[index]?.message.toString())!,
-                        style: TextStyle(fontSize: 26.0, color: Colors.white),
+                        changeTimeStampToDate(_messages[index].createdAt),
+                        textAlign: TextAlign.end,
+                        style: TextStyle(fontSize: 12.0, color: Colors.black54),
                       ),
                     ],
                   ),
@@ -172,6 +223,7 @@ class _WhatsUpState extends State<WhatsUp> {
       }
     } else {
       // if (await canLaunchUrl(Uri.parse(whatsupAD))) {
+      messageController?.clear();
       await launchUrl(Uri.parse(whatsupAD));
       // } else {
       //   _updateSuccessMessage('WhatsApp is not install');
@@ -185,6 +237,31 @@ class _WhatsUpState extends State<WhatsUp> {
       setState(() {
         _isLoading = false;
         _messages = messages;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      _updateSuccessMessage(e);
+    }
+  }
+
+  Future<void> sendMessages() async {
+    Map<String, dynamic> data = {
+      'message': messageController?.text.toString(),
+      'voterId': widget.voter.id,
+      'sender': await Shared.getPhonenumber(),
+      'receiver': widget.voter.phone
+    };
+
+    try {
+      List<Message> messages = await remoteService.sendMessages(data);
+      openWhatsup(widget.voter.phone, data['message']);
+      setState(() {
+        _isLoading = false;
+        setState(() {
+          _messages.add(messages[0]);
+        });
       });
     } catch (e) {
       setState(() {

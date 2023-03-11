@@ -1,37 +1,37 @@
-import 'package:Mugavan/screens/dashboard.dart';
-import 'package:Mugavan/screens/new_profile.dart';
+import 'package:Mugavan/screens/otp.dart';
 import 'package:Mugavan/service/remote_service.dart';
-import 'package:Mugavan/utils/constant.dart';
-
+import 'package:Mugavan/utils/shared.dart';
 import 'package:flutter/material.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
 
-import '../utils/shared.dart';
+import '../utils/constant.dart';
 
 class Auth extends StatefulWidget {
-  const Auth({super.key});
+  const Auth({Key? key}) : super(key: key);
 
   @override
   _AuthState createState() => _AuthState();
 }
 
-class _AuthState extends State<Auth> {
-  String? phone;
-
+class _AuthState extends State<Auth> with TickerProviderStateMixin {
   RemoteService remoteService = RemoteService();
 
   var _isLoading = false;
 
-  TextEditingController? pinCodeController;
+  TextEditingController? phoneController;
 
   final formKey = GlobalKey<FormState>();
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
-    getPhoneNumber();
     super.initState();
-    pinCodeController = TextEditingController();
+    phoneController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    phoneController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -44,7 +44,7 @@ class _AuthState extends State<Auth> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
             Text(
-              Constant.account,
+              'முகவர் கணக்கு',
               style: TextStyle(fontSize: 18.0),
             ),
           ],
@@ -64,35 +64,32 @@ class _AuthState extends State<Auth> {
         child: Column(
           children: [
             Text(
-              '$phone இந்த தொலைபேசிக்கு அனுப்பப்பட்ட ஒருமுறை கடவுச் சொல்லை அனுப்பவும்',
-              style: TextStyle(fontSize: 18.0),
+              'கணக்கை உருவாக்க அல்லது உள்செல்ல தொலைபேசியை பதிவிடவும்.',
+              style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w100),
             ),
             SizedBox(
               height: 20,
             ),
-            PinCodeTextField(
-              validator: (value) {
-                if (value == null || value.length != 4) {
-                  return 'ஒருமுறை கடவுச் சொல்லை பதிவிடவும்';
-                } else {
-                  return null;
-                }
-              },
-              keyboardType: TextInputType.number,
-              appContext: context,
-              length: 4,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              enableActiveFill: false,
-              autoFocus: true,
-              showCursor: true,
-              cursorColor: Colors.black,
-              obscureText: false,
-              hintCharacter: '-',
-              controller: pinCodeController,
-              onChanged: (_) => {},
-            ),
+            TextFormField(
+                keyboardType: TextInputType.phone,
+                maxLength: 10,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'தொலைபேசி எண் தேவை';
+                  } else if (!RegExp('^[6-9]\\d{9}\$').hasMatch(value)) {
+                    return 'சரியான தொலைபேசி எண்ணை பதிவிடவும்';
+                  } else {
+                    return null;
+                  }
+                },
+                controller: phoneController,
+                decoration: InputDecoration(
+                    hintText: 'தொலைபேசி எண்னை பதிவிடவும்',
+                    labelText: 'தொலைபேசி எண்',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)))),
             SizedBox(
-              height: 20,
+              height: 40.0,
             ),
             _isLoading
                 ? CircularProgressIndicator()
@@ -100,11 +97,13 @@ class _AuthState extends State<Auth> {
                     padding: EdgeInsets.all(16.0),
                     minWidth: double.infinity,
                     height: 46,
-                    color: Colors.blue,
+                    color: Constant.primeColor,
                     textColor: Colors.white,
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
-                        authOTP();
+                        String? phone = phoneController?.text.toString()!;
+                        Shared.setPhonenumber(phone!);
+                        createAccount();
                       }
                     },
                     shape: RoundedRectangleBorder(
@@ -113,7 +112,7 @@ class _AuthState extends State<Auth> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
                         Text(
-                          Constant.submit,
+                          'சமர்ப்பி',
                           style: TextStyle(fontSize: 18.0),
                         ),
                         Icon(Icons.arrow_forward)
@@ -126,14 +125,17 @@ class _AuthState extends State<Auth> {
     );
   }
 
-  Future<void> authOTP() async {
+  void createAccount() async {
     setState(() {
       _isLoading = true;
     });
+
     try {
-      Map<String, dynamic> maps = await remoteService
-          .authOTP({'otp': pinCodeController?.text, 'phone': phone});
-      storeData(maps);
+      bool isSuccess = await remoteService
+          .createAccount({'phone': phoneController?.text.toString()});
+      if (isSuccess) {
+        navigateToAuth();
+      }
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -142,44 +144,13 @@ class _AuthState extends State<Auth> {
     }
   }
 
-  storeData(Map<String, dynamic> res) {
-    setState(() {
-      _isLoading = false;
-    });
-    if (res!['accessToken'] != null && res!['session'] == false) {
-      Shared.setAuthShared(res).then((bool value) => {
-            if (value)
-              {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const NewProfile()))
-              }
-            else
-              {}
-          });
-    } else if (res!['accessToken'] != null && res!['session'] == true) {
-      Shared.setShared(res).then((value) => {
-            if (value)
-              {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const Dashboard()))
-              }
-            else
-              {}
-          });
-    }
-  }
-
-  void getPhoneNumber() async {
-    Shared.getPhonenumber().then((value) => {
-          setState(() {
-            phone = value;
-          })
-        });
-  }
-
   void _updateSuccessMessage(var e) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(e.toString()),
         duration: Duration(seconds: Constant.limit, milliseconds: 0)));
+  }
+
+  void navigateToAuth() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => OTP()));
   }
 }

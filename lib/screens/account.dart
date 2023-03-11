@@ -1,5 +1,5 @@
 import 'package:Mugavan/models/voter.dart';
-import 'package:Mugavan/screens/signup.dart';
+import 'package:Mugavan/screens/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 
@@ -277,14 +277,14 @@ class _AccountState extends State<Account> with AutomaticKeepAliveClientMixin {
         setState(() {
           _isLoading = false;
           _voter = voters[0];
-          userNameController?.text = (_voter?.name.ta.toString())!;
-          phonenumberController?.text = (_voter?.phone.toString())!;
-          fnameController?.text = (_voter?.sentinal.ta.toString())!;
-          voterIdController?.text = (_voter?.doorNo.toString())!;
-          doorNoController?.text = (_voter?.doorNo.toString())!;
-          ageController?.text = (_voter?.age.toString())!;
+          userNameController?.text = _voter?.name.ta ?? '';
+          phonenumberController?.text = _voter?.phone ?? '';
+          fnameController?.text = _voter?.sentinal?.ta ?? '';
+          voterIdController?.text = _voter?.voterId ?? '';
+          doorNoController?.text = _voter?.doorNo ?? '';
+          ageController?.text = _voter?.age.toString() ?? '0';
           sexController?.text =
-              _tSex[_eSex.indexOf((_voter?.sex.toLowerCase().toString())!)];
+              _tSex[_eSex.indexOf(_voter?.sex?.toLowerCase() ?? 'male')];
         });
       } else {
         setState(() {
@@ -331,10 +331,8 @@ class _AccountState extends State<Account> with AutomaticKeepAliveClientMixin {
       onPressed: () async {
         var isRemove = await Shared.removeAll();
         if (isRemove) {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => const SignUp()));
-        } else
-          print("");
+          navigateToSignUp();
+        }
       },
     );
 
@@ -361,5 +359,10 @@ class _AccountState extends State<Account> with AutomaticKeepAliveClientMixin {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(e.toString()),
         duration: Duration(seconds: Constant.limit, milliseconds: 0)));
+  }
+
+  void navigateToSignUp() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => const Auth()));
   }
 }

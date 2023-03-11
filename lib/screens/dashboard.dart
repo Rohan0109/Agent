@@ -1,5 +1,5 @@
 import 'package:Mugavan/screens/account.dart';
-import 'package:Mugavan/screens/mypeople_list.dart';
+import 'package:Mugavan/screens/my_voter_list.dart';
 import 'package:Mugavan/utils/constant.dart';
 import 'package:flutter/material.dart';
 
@@ -16,7 +16,8 @@ class _DashboardState extends State<Dashboard> {
   late PageController pageController;
 
   final List<Widget> _widgetOptions = <Widget>[
-    const MyPeopleList(),
+    const MyVoterList(),
+    // const AddVoter(),
     const Account(),
   ];
 
@@ -59,6 +60,10 @@ class _DashboardState extends State<Dashboard> {
               label: Constant.voter,
               icon: Icon(Icons.list_alt),
               backgroundColor: Color.fromRGBO(31, 71, 136, 1)),
+          // BottomNavigationBarItem(
+          //     label: 'இணை',
+          //     icon: Icon(Icons.add_box_rounded),
+          //     backgroundColor: Color.fromRGBO(31, 71, 136, 1)),
           BottomNavigationBarItem(
               label: Constant.account,
               icon: Icon(Icons.account_circle),

@@ -13,31 +13,43 @@ String messageToJson(List<Message> data) =>
 class Message {
   Message({
     required this.message,
-    required this.agentId,
     required this.voterId,
     required this.createdAt,
     required this.updatedAt,
+    required this.agentId,
+    required this.sender,
+    required this.receiver,
+    required this.id,
   });
 
   String message;
-  int agentId;
   int voterId;
   int createdAt;
   int updatedAt;
+  int agentId;
+  String sender;
+  String receiver;
+  int id;
 
   factory Message.fromJson(Map<String, dynamic> json) => Message(
         message: json['message'],
-        agentId: json['agentId'],
         voterId: json['voterId'],
         createdAt: json['createdAt'],
         updatedAt: json['updatedAt'],
+        agentId: json['agentId'],
+        sender: json['sender'],
+        receiver: json['receiver'],
+        id: json['id'],
       );
 
   Map<String, dynamic> toJson() => {
         'message': message,
-        'agentId': agentId,
         'voterId': voterId,
         'createdAt': createdAt,
         'updatedAt': updatedAt,
+        'agentId': agentId,
+        'sender': sender,
+        'receiver': receiver,
+        'id': id,
       };
 }

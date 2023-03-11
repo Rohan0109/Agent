@@ -12,7 +12,7 @@ String wardToJson(List<Ward> data) =>
 
 class Ward {
   Ward({
-    required this.wardNo,
+    required this.ward,
     required this.localbodyId,
     required this.talukId,
     required this.assemblyId,
@@ -25,7 +25,7 @@ class Ward {
     required this.id,
   });
 
-  int wardNo;
+  WardClass ward;
   int localbodyId;
   int talukId;
   int assemblyId;
@@ -38,7 +38,7 @@ class Ward {
   int id;
 
   factory Ward.fromJson(Map<String, dynamic> json) => Ward(
-        wardNo: json['wardNo'],
+        ward: WardClass.fromJson(json['ward']),
         localbodyId: json['localbodyId'],
         talukId: json['talukId'],
         assemblyId: json['assemblyId'],
@@ -52,7 +52,7 @@ class Ward {
       );
 
   Map<String, dynamic> toJson() => {
-        'wardNo': wardNo,
+        'wardNo': ward.toJson(),
         'localbodyId': localbodyId,
         'talukId': talukId,
         'assemblyId': assemblyId,
@@ -63,5 +63,25 @@ class Ward {
         'createdAt': createdAt,
         'updatedAt': updatedAt,
         'id': id,
+      };
+}
+
+class WardClass {
+  WardClass({
+    required this.en,
+    required this.ta,
+  });
+
+  String en;
+  String ta;
+
+  factory WardClass.fromJson(Map<String, dynamic> json) => WardClass(
+        en: json['en'],
+        ta: json['ta'],
+      );
+
+  Map<String, dynamic> toJson() => {
+        'en': en,
+        'ta': ta,
       };
 }

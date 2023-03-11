@@ -1,19 +1,19 @@
 import 'package:Mugavan/models/voter.dart';
-import 'package:Mugavan/screens/peoples.dart';
-import 'package:Mugavan/screens/update_troop.dart';
+import 'package:Mugavan/screens/unassigned_ward_voters.dart';
+import 'package:Mugavan/screens/update_my_voter.dart';
 import 'package:flutter/material.dart';
 
 import '../service/remote_service.dart';
 import '../utils/constant.dart';
 
-class MyPeopleList extends StatefulWidget {
-  const MyPeopleList({Key? key}) : super(key: key);
+class MyVoterList extends StatefulWidget {
+  const MyVoterList({Key? key}) : super(key: key);
 
   @override
-  State<MyPeopleList> createState() => _MyPeopleListState();
+  State<MyVoterList> createState() => _MyVoterListState();
 }
 
-class _MyPeopleListState extends State<MyPeopleList>
+class _MyVoterListState extends State<MyVoterList>
     with AutomaticKeepAliveClientMixin {
   RemoteService remoteService = RemoteService();
 
@@ -61,7 +61,7 @@ class _MyPeopleListState extends State<MyPeopleList>
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
+        backgroundColor: Constant.primeColor,
         onPressed: () {
           _navigationToPeoplePage();
         },
@@ -77,7 +77,6 @@ class _MyPeopleListState extends State<MyPeopleList>
             SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
         itemCount: _voters?.length,
         itemBuilder: (BuildContext context, int index) {
-          var _isShow = _voters?[index].isTaken;
           return GestureDetector(
               onLongPress: () {
                 // setState(() {
@@ -88,16 +87,16 @@ class _MyPeopleListState extends State<MyPeopleList>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => UpdateTroop(voter: _voters![index]),
+                    builder: (context) => UpdateMyVoter(voter: _voters![index]),
                   ),
                 );
               },
               child: Card(
                 elevation: 1,
-                color: Color.fromRGBO(33, 150, 243, 1.0),
+                color: Colors.white,
                 shape: RoundedRectangleBorder(
                   side: BorderSide(
-                    color: Colors.blue.shade50,
+                    color: Colors.black12,
                   ),
                   borderRadius: BorderRadius.circular(15.0),
                 ),
@@ -108,34 +107,33 @@ class _MyPeopleListState extends State<MyPeopleList>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        (_voters?[index]?.voterId.toString())!,
-                        style: TextStyle(fontSize: 26.0, color: Colors.white),
+                        _voters?[index].voterId ?? '',
+                        style: TextStyle(fontSize: 26.0, color: Colors.black87),
                       ),
                       Text(
-                        (_voters?[index]?.name.ta.toString().toUpperCase())!,
-                        style: TextStyle(fontSize: 20.0, color: Colors.white),
+                        _voters?[index].name.ta.toUpperCase() ?? '',
+                        style: TextStyle(fontSize: 20.0, color: Colors.black87),
                       ),
                       Text(
-                        (_voters?[index]
-                            ?.sentinal
-                            .ta
-                            .toString()
-                            .toUpperCase())!,
-                        style: TextStyle(fontSize: 20.0, color: Colors.white),
+                        (_voters?[index].sentinal?.ta.toUpperCase()) ?? '',
+                        style: TextStyle(fontSize: 20.0, color: Colors.black87),
                       ),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Text(
-                            '${_tSex[_eSex.indexOf((_voters?[index]?.sex.toString().toLowerCase())!)]}',
-                            style:
-                                TextStyle(fontSize: 14.0, color: Colors.white),
+                            _tSex[_eSex.indexOf((_voters?[index]
+                                .sex
+                                .toString()
+                                .toLowerCase())!)],
+                            style: TextStyle(
+                                fontSize: 14.0, color: Colors.black87),
                           ),
                           Text(
-                            'வயது : ${(_voters?[index]?.age.toString())!}',
-                            style:
-                                TextStyle(fontSize: 14.0, color: Colors.white),
+                            'வயது : ${(_voters?[index].age.toString())!}',
+                            style: TextStyle(
+                                fontSize: 14.0, color: Colors.black87),
                           ),
                         ],
                       ),
@@ -164,7 +162,7 @@ class _MyPeopleListState extends State<MyPeopleList>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      'images/empty.png',
+                      'assets/images/empty.png',
                       width: 300,
                     ),
                     SizedBox(height: 10),
@@ -212,14 +210,15 @@ class _MyPeopleListState extends State<MyPeopleList>
     try {
       List<Voter> voters = await remoteService.getAassingedVotersWithWard();
       setState(() {
-        _isLoading = false;
         _voters = voters;
       });
     } catch (e) {
+      print(e.toString());
+      _updateSuccessMessage(e);
+    } finally {
       setState(() {
         _isLoading = false;
       });
-      _updateSuccessMessage(e);
     }
   }
 
@@ -228,7 +227,8 @@ class _MyPeopleListState extends State<MyPeopleList>
   }
 
   void _navigationToPeoplePage() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => Peoples()));
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => UnassignedWardVoters()));
   }
 
   @override
@@ -273,10 +273,8 @@ class MySearchDelegate extends SearchDelegate {
 
   @override
   Widget buildResults(BuildContext context) {
-    return Container(
-      child: Center(
-        child: Text(selectedResult),
-      ),
+    return Center(
+      child: Text(selectedResult),
     );
   }
 

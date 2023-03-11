@@ -14,12 +14,12 @@ class Voter {
   Voter({
     required this.voterId,
     required this.name,
-    required this.sentinal,
-    required this.doorNo,
-    required this.age,
-    required this.sex,
-    required this.isFather,
-    required this.boothId,
+    this.sentinal,
+    this.doorNo,
+    this.age,
+    this.sex,
+    this.isFather,
+    this.boothId,
     required this.wardId,
     required this.talukId,
     required this.localbodyId,
@@ -30,22 +30,22 @@ class Voter {
     required this.countryId,
     required this.createdAt,
     required this.updatedAt,
-    required this.isAgent,
-    required this.isTaken,
+    this.isAgent,
+    this.isTaken,
     required this.id,
-    required this.agentId,
-    required this.memberId,
-    required this.phone,
+    this.agentId,
+    this.memberId,
+    this.phone,
   });
 
   String voterId;
   Name name;
-  Name sentinal;
-  String doorNo;
-  int age;
-  String sex;
-  bool isFather;
-  int boothId;
+  Name? sentinal;
+  String? doorNo;
+  int? age;
+  String? sex;
+  bool? isFather;
+  int? boothId;
   int wardId;
   int talukId;
   int localbodyId;
@@ -56,17 +56,18 @@ class Voter {
   int countryId;
   int createdAt;
   int updatedAt;
-  bool isAgent;
-  bool isTaken;
+  bool? isAgent;
+  bool? isTaken;
   int id;
-  int agentId;
-  String memberId;
-  String phone;
+  int? agentId;
+  String? memberId;
+  String? phone;
 
   factory Voter.fromJson(Map<String, dynamic> json) => Voter(
         voterId: json['voterId'],
         name: Name.fromJson(json['name']),
-        sentinal: Name.fromJson(json['sentinal']),
+        sentinal:
+            json['sentinal'] != null ? Name.fromJson(json['sentinal']) : null,
         doorNo: json['doorNo'],
         age: json['age'],
         sex: json['sex'],
@@ -93,7 +94,7 @@ class Voter {
   Map<String, dynamic> toJson() => {
         'voterId': voterId,
         'name': name.toJson(),
-        'sentinal': sentinal.toJson(),
+        'sentinal': sentinal?.toJson(),
         'doorNo': doorNo,
         'age': age,
         'sex': sex,

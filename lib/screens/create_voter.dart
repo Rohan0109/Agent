@@ -1,5 +1,6 @@
 import 'package:Mugavan/models/booth.dart';
 import 'package:Mugavan/models/voter.dart';
+import 'package:Mugavan/screens/splash.dart';
 import 'package:Mugavan/service/remote_service.dart';
 import 'package:flutter/material.dart';
 
@@ -8,21 +9,21 @@ import '../utils/constant.dart';
 import '../utils/shared.dart';
 import 'dashboard.dart';
 
-class NewVoter extends StatefulWidget {
+class CreateVoter extends StatefulWidget {
   final Ward ward;
   final Booth booth;
 
-  const NewVoter({required this.ward, required this.booth, super.key});
+  const CreateVoter({required this.ward, required this.booth, super.key});
 
   @override
-  State<NewVoter> createState() => _NewVoterState();
+  State<CreateVoter> createState() => _CreateVoterState();
 }
 
-class _NewVoterState extends State<NewVoter> {
+class _CreateVoterState extends State<CreateVoter> {
   bool _isLoading = true;
   bool _isAccountExisting = false;
 
-  RemoteService remoteService = RemoteService();
+  RemoteService _remoteService = RemoteService();
 
   TextEditingController? phoneController;
   TextEditingController? memberIdController;
@@ -61,7 +62,7 @@ class _NewVoterState extends State<NewVoter> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      // resizeToAvoidBottomInset: false,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Column(
@@ -89,7 +90,7 @@ class _NewVoterState extends State<NewVoter> {
       child: Form(
         key: formKey,
         child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.fromLTRB(16.0, 32.0, 16.0, 8.0),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.start,
@@ -128,7 +129,7 @@ class _NewVoterState extends State<NewVoter> {
                         },
                         icon: Icon(
                           Icons.refresh,
-                          color: Colors.blue,
+                          color: Constant.primeColor,
                         ))
                   ],
                 ),
@@ -173,7 +174,7 @@ class _NewVoterState extends State<NewVoter> {
                         },
                         icon: Icon(
                           Icons.refresh,
-                          color: Colors.blue,
+                          color: Constant.primeColor,
                         ))
                   ],
                 ),
@@ -328,7 +329,7 @@ class _NewVoterState extends State<NewVoter> {
                   padding: EdgeInsets.all(16.0),
                   minWidth: double.infinity,
                   height: 46,
-                  color: Colors.blue,
+                  color: Constant.primeColor,
                   textColor: Colors.white,
                   onPressed: () {
                     if (formKey.currentState!.validate()) {
@@ -409,7 +410,7 @@ class _NewVoterState extends State<NewVoter> {
       data['memberId'] = memberIdController?.text.toString();
     }
     try {
-      Map<String, dynamic> maps = await remoteService.createVoter(data);
+      Map<String, dynamic> maps = await _remoteService.addNewVoter(data);
       createAgent(maps['upsertedId']);
     } catch (e) {
       setState(() {
@@ -425,22 +426,21 @@ class _NewVoterState extends State<NewVoter> {
       _isAccountExisting = false;
     });
     try {
-      List<Voter> voters = await remoteService.getVoter(voterId);
+      List<Voter> voters = await _remoteService.getVoter(voterId);
       if (voters.isNotEmpty) {
         setState(() {
           _isAccountExisting = true;
           voter = voters[0];
-          phoneController?.text = voter.phone.toString();
-          voterIdController?.text = voter.voterId.toString();
-          voterNameController?.text = voter.name.ta.toString();
-          voterFnameController?.text = voter.sentinal.ta.toString();
+          phoneController?.text = voter.phone ?? '';
+          voterIdController?.text = voter.voterId;
+          voterNameController?.text = voter.name.ta ?? '';
+          voterFnameController?.text = voter.sentinal?.ta ?? '';
           doorNoController?.text = voter.doorNo.toString();
           ageController?.text = voter.age.toString();
-          _selectSex = _sex[_eSex.indexOf(voter.sex.toLowerCase())];
-          _selectSential = voter.isFather ? _sential[0] : _sential[1];
-          if (voter.memberId != null) {
-            memberIdController?.text = voter.memberId;
-          }
+          _selectSex = _sex[_eSex.indexOf(voter.sex?.toLowerCase() ?? 'male')];
+          _selectSential = voter.isFather ?? false ? _sential[0] : _sential[1];
+
+          memberIdController?.text = voter.memberId ?? '';
           _isLoading = false;
         });
       } else {
@@ -466,22 +466,20 @@ class _NewVoterState extends State<NewVoter> {
       _isAccountExisting = false;
     });
     try {
-      List<Voter> voters = await remoteService.getVoterWithPhone(phone);
+      List<Voter> voters = await _remoteService.getVoterWithPhone(phone);
       if (voters.isNotEmpty) {
         setState(() {
           _isAccountExisting = true;
           voter = voters[0];
-          phoneController?.text = voter.phone.toString();
-          voterIdController?.text = voter.voterId.toString();
-          voterNameController?.text = voter.name.ta.toString();
-          voterFnameController?.text = voter.sentinal.ta.toString();
+          phoneController?.text = voter.phone ?? '';
+          voterIdController?.text = voter.voterId;
+          voterNameController?.text = voter.name.ta;
+          voterFnameController?.text = voter.sentinal?.ta ?? '';
           doorNoController?.text = voter.doorNo.toString();
           ageController?.text = voter.age.toString();
-          _selectSex = _sex[_eSex.indexOf(voter.sex.toLowerCase())];
-          _selectSential = voter.isFather ? _sential[0] : _sential[1];
-          if (voter.memberId != null) {
-            memberIdController?.text = voter.memberId;
-          }
+          _selectSex = _sex[_eSex.indexOf(voter.sex?.toLowerCase() ?? 'male')];
+          _selectSential = voter.isFather ?? false ? _sential[0] : _sential[1];
+          memberIdController?.text = voter.memberId ?? '';
           _isLoading = false;
         });
       } else {
@@ -506,7 +504,7 @@ class _NewVoterState extends State<NewVoter> {
       _isLoading = true;
     });
     try {
-      Map<String, dynamic> maps = await remoteService.createAgent({
+      Map<String, dynamic> maps = await _remoteService.createAgent({
         'voterId': [voterId]
       });
       storeData(maps);
@@ -522,7 +520,7 @@ class _NewVoterState extends State<NewVoter> {
     setState(() {
       _isLoading = false;
     });
-    if (res!['accessToken'] != null && res!['session'] == true) {
+    if (res['Authorization'] != null && res['session'] == true) {
       Shared.setShared(res).then((value) => {
             if (value)
               {
@@ -530,7 +528,12 @@ class _NewVoterState extends State<NewVoter> {
                     MaterialPageRoute(builder: (context) => const Dashboard()))
               }
             else
-              {}
+              {
+                _updateSuccessMessage(
+                    'Somthing went wrong please try again later.'),
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const Splash()))
+              }
           });
     }
   }

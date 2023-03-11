@@ -1,19 +1,20 @@
 import 'dart:ui';
 
 import 'package:Mugavan/models/voter.dart';
+import 'package:Mugavan/screens/add_new_voter.dart';
 import 'package:Mugavan/service/remote_service.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/constant.dart';
 
-class Peoples extends StatefulWidget {
-  const Peoples({Key? key}) : super(key: key);
+class UnassignedWardVoters extends StatefulWidget {
+  const UnassignedWardVoters({Key? key}) : super(key: key);
 
   @override
-  State<Peoples> createState() => _PeoplesState();
+  State<UnassignedWardVoters> createState() => _UnassignedWardVotersState();
 }
 
-class _PeoplesState extends State<Peoples> {
+class _UnassignedWardVotersState extends State<UnassignedWardVoters> {
   RemoteService remoteService = RemoteService();
 
   final List<String> _tSex = ['ஆண்', 'பெண்', 'மூன்றாம் பாலினத்தவர்'];
@@ -35,7 +36,7 @@ class _PeoplesState extends State<Peoples> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: true,
-        title: Text(Constant.booth),
+        title: Text(Constant.wardName),
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -62,6 +63,18 @@ class _PeoplesState extends State<Peoples> {
             ? const Center(child: CircularProgressIndicator())
             : getOrderListWidget(),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Constant.primeColor,
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddNewVoter(),
+              ));
+        },
+        child: Icon(Icons.add),
+      ),
     );
   }
 
@@ -86,10 +99,10 @@ class _PeoplesState extends State<Peoples> {
               },
               child: Card(
                 elevation: 1,
-                color: Color.fromRGBO(33, 150, 243, 1.0),
+                color: Colors.white,
                 shape: RoundedRectangleBorder(
                   side: BorderSide(
-                    color: Colors.blue.shade50,
+                    color: Colors.black12,
                   ),
                   borderRadius: BorderRadius.circular(15.0),
                 ),
@@ -100,34 +113,33 @@ class _PeoplesState extends State<Peoples> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        (_voters?[index]?.voterId.toString())!,
-                        style: TextStyle(fontSize: 26.0, color: Colors.white),
+                        _voters?[index].voterId ?? '',
+                        style: TextStyle(fontSize: 26.0, color: Colors.black87),
                       ),
                       Text(
-                        (_voters?[index]?.name.ta.toString().toUpperCase())!,
-                        style: TextStyle(fontSize: 20.0, color: Colors.white),
+                        (_voters?[index].name.ta.toString().toUpperCase())!,
+                        style: TextStyle(fontSize: 20.0, color: Colors.black87),
                       ),
                       Text(
-                        (_voters?[index]
-                            ?.sentinal
-                            .ta
-                            .toString()
-                            .toUpperCase())!,
-                        style: TextStyle(fontSize: 20.0, color: Colors.white),
+                        _voters?[index].sentinal?.ta.toUpperCase() ?? '',
+                        style: TextStyle(fontSize: 20.0, color: Colors.black87),
                       ),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Text(
-                            '${_tSex[_eSex.indexOf((_voters?[index]?.sex.toString().toLowerCase())!)]}',
-                            style:
-                                TextStyle(fontSize: 14.0, color: Colors.white),
+                            _tSex[_eSex.indexOf((_voters?[index]
+                                ?.sex
+                                .toString()
+                                .toLowerCase())!)],
+                            style: TextStyle(
+                                fontSize: 14.0, color: Colors.black87),
                           ),
                           Text(
-                            'வயது : ${(_voters?[index]?.age.toString())!}',
-                            style:
-                                TextStyle(fontSize: 14.0, color: Colors.white),
+                            'வயது : ${(_voters?[index].age.toString()) ?? 0}',
+                            style: TextStyle(
+                                fontSize: 14.0, color: Colors.black87),
                           ),
                         ],
                       ),
@@ -170,11 +182,11 @@ class _PeoplesState extends State<Peoples> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      'images/empty.png',
+                      'assets/images/empty.png',
                       width: 300,
                     ),
                     SizedBox(height: 10),
-                    Text('வாக்குசாவடியில் வாக்காளர்கள் இல்லை.')
+                    Text('வார்டுயில் வாக்காளர்கள் இல்லை.')
                   ],
                 ),
               ),

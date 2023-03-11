@@ -5,20 +5,20 @@ import 'package:Mugavan/models/localbody.dart';
 import 'package:Mugavan/models/parliament.dart';
 import 'package:Mugavan/models/taluk.dart';
 import 'package:Mugavan/models/ward.dart';
-import 'package:Mugavan/screens/new_voter.dart';
+import 'package:Mugavan/screens/create_voter.dart';
 import 'package:Mugavan/service/remote_service.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/constant.dart';
 
-class NewProfile extends StatefulWidget {
-  const NewProfile({super.key});
+class SelectGeoLocation extends StatefulWidget {
+  const SelectGeoLocation({super.key});
 
   @override
-  _NewProfileState createState() => _NewProfileState();
+  _SelectGeoLocationState createState() => _SelectGeoLocationState();
 }
 
-class _NewProfileState extends State<NewProfile> {
+class _SelectGeoLocationState extends State<SelectGeoLocation> {
   RemoteService remoteService = RemoteService();
 
   bool isLoading = true;
@@ -29,118 +29,18 @@ class _NewProfileState extends State<NewProfile> {
   bool _isWardLoading = false;
   bool _isBoothLoading = false;
 
-  List<District> _districts = [
-    District(
-        createdAt: 1,
-        code: 1,
-        district:
-            DistrictClass(en: '--Select District --', ta: '-- மாவட்டம் --'),
-        stateId: 0,
-        countryId: 0,
-        updatedAt: 0,
-        id: 0)
-  ];
+  List<District> _districts = [Constant.district];
 
-  List<Taluk> _taluks = [
-    Taluk(
-        taluk: TalukClass(en: '--Select Taluk --', ta: '-- தாலுகா --'),
-        assemblyId: 0,
-        parliamentId: 0,
-        districtId: 0,
-        stateId: 0,
-        country: 0,
-        createdAt: 0,
-        updatedAt: 0,
-        code: 0,
-        id: 0)
-  ];
+  List<Taluk> _taluks = [Constant.taluk];
 
-  List<Parliament> _parliaments = [
-    Parliament(
-        parliamentNo: 0,
-        parliamentName: ParliamentName(
-            en: '--Select Parliament --', ta: '-- பாராளுமன்றம் --'),
-        typeOfParliament: 'none',
-        districtId: 0,
-        stateId: 0,
-        countryId: 0,
-        createdAt: 0,
-        updatedAt: 0,
-        id: 0)
-  ];
+  List<Parliament> _parliaments = [Constant.parliament];
 
-  List<Assembly> _assemblies = [
-    Assembly(
-        assemblyNo: 0,
-        assembly:
-            AssemblyClass(en: '--Select Assembly --', ta: '-- சட்டசபை --'),
-        typeOfAssembly: 'none',
-        parliamentId: 0,
-        districtId: 0,
-        stateId: 0,
-        countryId: 0,
-        createdAt: 0,
-        updatedAt: 0,
-        id: 0)
-  ];
+  List<Assembly> _assemblies = [Constant.assembly];
+  List<Localbody> _localbodies = [Constant.localbody];
 
-  List<Localbody> _localbodies = [
-    Localbody(
-        localbody:
-            LocalbodyClass(en: '--Select Localbody --', ta: '-- உள்ளாட்சி --'),
-        type: 'type',
-        category: 'category',
-        assemblyId: 0,
-        parliamentId: 0,
-        districtId: 0,
-        stateId: 0,
-        countryId: 0,
-        createdAt: 0,
-        updatedAt: 0,
-        id: 0,
-        code: 0)
-  ];
+  List<Ward> _wards = [Constant.ward];
 
-  List<Ward> _wards = [
-    Ward(
-        wardNo: 0,
-        localbodyId: 0,
-        talukId: 0,
-        assemblyId: 0,
-        parliamentId: 0,
-        districtId: 0,
-        stateId: 0,
-        countryId: 0,
-        createdAt: 0,
-        updatedAt: 0,
-        id: 0)
-  ];
-
-  List<Booth> _booths = [
-    Booth(
-        name: Name(en: '--Select Booth--', ta: '-- வாக்கு சாவடி --'),
-        boothNo: 0,
-        type: 'type',
-        address: 'address',
-        noOfVoters: 0,
-        startingNo: 0,
-        endingNo: 0,
-        men: 0,
-        women: 0,
-        transgenders: 0,
-        wardId: 0,
-        localbodyId: 0,
-        talukId: 0,
-        assemblyId: 0,
-        parliamentId: 0,
-        districtId: 0,
-        stateId: 0,
-        countryId: 0,
-        createdAt: 0,
-        updatedAt: 0,
-        code: '0',
-        id: 0)
-  ];
+  List<Booth> _booths = [Constant.booth];
 
   // Country? _country;
   // Province? _province;
@@ -178,7 +78,7 @@ class _NewProfileState extends State<NewProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      // resizeToAvoidBottomInset: false,
       key: scaffoldKey,
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -219,7 +119,7 @@ class _NewProfileState extends State<NewProfile> {
       child: Form(
         key: formKey,
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.fromLTRB(16.0, 32.0, 16.0, 16.0),
           child: Column(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.start,
@@ -411,7 +311,7 @@ class _NewProfileState extends State<NewProfile> {
                               ?.map((e) => DropdownMenuItem(
                                     enabled: true,
                                     value: e,
-                                    child: Text(e.wardNo.toString()),
+                                    child: Text(e.ward.ta.toString()),
                                   ))
                               .toList(),
                           value: _ward,
@@ -430,53 +330,56 @@ class _NewProfileState extends State<NewProfile> {
               SizedBox(
                 height: 14,
               ),
-              Container(
-                  child: _isBoothLoading
-                      ? Center(child: CircularProgressIndicator())
-                      : DropdownButtonFormField(
-                          // validator: (Booth? value) {
-                          //   if (value == null || value.id == 0) {
-                          //     return '* வாக்கு சாவடி தேவை';
-                          //   }
-                          //   return null;
-                          // },
-                          decoration: InputDecoration(
-                              enabled: true,
-                              labelText: 'வாக்கு சாவடி',
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8))),
-                          items: _booths
-                              ?.map((e) => DropdownMenuItem(
-                                    enabled: true,
-                                    value: e,
-                                    child: Text(e.name.ta.toString()),
-                                  ))
-                              .toList(),
-                          value: _booth,
-                          isDense: true,
-                          isExpanded: true,
-                          hint: Text(
-                            'உங்கள் வாக்கு சாவடியைத் தேர்ந்தெடுக்கவும்',
-                          ),
-                          onChanged: (Booth? value) {
-                            setState(() {
-                              _booth = value;
-                            });
-                          },
-                        )),
+              Visibility(
+                visible: false,
+                child: Container(
+                    child: _isBoothLoading
+                        ? Center(child: CircularProgressIndicator())
+                        : DropdownButtonFormField(
+                            // validator: (Booth? value) {
+                            //   if (value == null || value.id == 0) {
+                            //     return '* வாக்கு சாவடி தேவை';
+                            //   }
+                            //   return null;
+                            // },
+                            decoration: InputDecoration(
+                                enabled: true,
+                                labelText: 'வாக்கு சாவடி',
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8))),
+                            items: _booths
+                                ?.map((e) => DropdownMenuItem(
+                                      enabled: true,
+                                      value: e,
+                                      child: Text(e.name.ta.toString()),
+                                    ))
+                                .toList(),
+                            value: _booth,
+                            isDense: true,
+                            isExpanded: true,
+                            hint: Text(
+                              'உங்கள் வாக்கு சாவடியைத் தேர்ந்தெடுக்கவும்',
+                            ),
+                            onChanged: (Booth? value) {
+                              setState(() {
+                                _booth = value;
+                              });
+                            },
+                          )),
+              ),
               SizedBox(height: 20),
               MaterialButton(
                 padding: EdgeInsets.all(16.0),
                 minWidth: double.infinity,
                 height: 46,
-                color: Colors.blue,
+                color: Constant.primeColor,
                 textColor: Colors.white,
                 onPressed: () {
                   if (formKey.currentState!.validate()) {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => NewVoter(
+                            builder: (context) => CreateVoter(
                                   ward: _ward!,
                                   booth: _booth!,
                                 )));
@@ -525,17 +428,7 @@ class _NewProfileState extends State<NewProfile> {
     setState(() {
       _isTalukLoading = true;
       _taluks.clear();
-      _taluks.add(Taluk(
-          taluk: TalukClass(en: '--Select Taluk --', ta: '-- தாலுகா --'),
-          assemblyId: 0,
-          parliamentId: 0,
-          districtId: 0,
-          stateId: 0,
-          country: 0,
-          createdAt: 0,
-          updatedAt: 0,
-          code: 0,
-          id: 0));
+      _taluks.add(Constant.taluk);
       _taluk = _taluks[0];
     });
     try {
@@ -556,17 +449,7 @@ class _NewProfileState extends State<NewProfile> {
     setState(() {
       _isParliamentLoading = true;
       _parliaments.clear();
-      _parliaments.add(Parliament(
-          parliamentNo: 0,
-          parliamentName: ParliamentName(
-              en: '--Select Parliament --', ta: '-- பாராளுமன்றம் --'),
-          typeOfParliament: 'none',
-          districtId: 0,
-          stateId: 0,
-          countryId: 0,
-          createdAt: 0,
-          updatedAt: 0,
-          id: 0));
+      _parliaments.add(Constant.parliament);
       _parliament = _parliaments[0];
     });
     try {
@@ -588,18 +471,7 @@ class _NewProfileState extends State<NewProfile> {
     setState(() {
       _isAssemblyLoading = true;
       _assemblies.clear();
-      _assemblies.add(Assembly(
-          assemblyNo: 0,
-          assembly:
-              AssemblyClass(en: '--Select Assembly --', ta: '-- சட்டசபை --'),
-          typeOfAssembly: 'none',
-          parliamentId: 0,
-          districtId: 0,
-          stateId: 0,
-          countryId: 0,
-          createdAt: 0,
-          updatedAt: 0,
-          id: 0));
+      _assemblies.add(Constant.assembly);
       _assembly = _assemblies[0];
     });
     try {
@@ -620,20 +492,7 @@ class _NewProfileState extends State<NewProfile> {
     setState(() {
       _isLocalbodyLoading = true;
       _localbodies.clear();
-      _localbodies.add(Localbody(
-          localbody: LocalbodyClass(
-              en: '--Select Localbody --', ta: '-- உள்ளாட்சி --'),
-          type: 'type',
-          category: 'category',
-          assemblyId: 0,
-          parliamentId: 0,
-          districtId: 0,
-          stateId: 0,
-          countryId: 0,
-          createdAt: 0,
-          updatedAt: 0,
-          id: 0,
-          code: 0));
+      _localbodies.add(Constant.localbody);
       _localbody = _localbodies[0];
     });
     try {
@@ -655,18 +514,7 @@ class _NewProfileState extends State<NewProfile> {
     setState(() {
       _isWardLoading = true;
       _wards.clear();
-      _wards.add(Ward(
-          wardNo: 0,
-          localbodyId: 0,
-          talukId: 0,
-          assemblyId: 0,
-          parliamentId: 0,
-          districtId: 0,
-          stateId: 0,
-          countryId: 0,
-          createdAt: 0,
-          updatedAt: 0,
-          id: 0));
+      _wards.add(Constant.ward);
       _ward = _wards[0];
     });
 
@@ -688,29 +536,7 @@ class _NewProfileState extends State<NewProfile> {
     setState(() {
       _isBoothLoading = true;
       _booths.clear();
-      _booths.add(Booth(
-          name: Name(en: '--Select Booth--', ta: '-- வாக்கு சாவடி --'),
-          boothNo: 0,
-          type: 'type',
-          address: 'address',
-          noOfVoters: 0,
-          startingNo: 0,
-          endingNo: 0,
-          men: 0,
-          women: 0,
-          transgenders: 0,
-          wardId: 0,
-          localbodyId: 0,
-          talukId: 0,
-          assemblyId: 0,
-          parliamentId: 0,
-          districtId: 0,
-          stateId: 0,
-          countryId: 0,
-          createdAt: 0,
-          updatedAt: 0,
-          code: '0',
-          id: 0));
+      _booths.add(Constant.booth);
       _booth = _booths[0];
     });
     try {

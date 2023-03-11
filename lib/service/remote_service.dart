@@ -24,10 +24,12 @@ class RemoteService {
 
   Future<bool> createAccount(Map<String, dynamic> data) async {
     try {
+      Map<String, String> headers = {'Content-Type': 'application/json'};
+
       final response = await client.post(
           Uri.parse('${Constant.url}/v1/addAgent'),
           body: json.encode(data),
-          headers: Constant.headers);
+          headers: headers);
       if (response.statusCode == 200) {
         return true;
       }
@@ -39,10 +41,11 @@ class RemoteService {
 
   Future<Map<String, dynamic>> authOTP(Map<String, dynamic> data) async {
     try {
+      Map<String, String> headers = {'Content-Type': 'application/json'};
       final response = await client.patch(
           Uri.parse('${Constant.url}/v1/agentAuth'),
           body: json.encode(data),
-          headers: Constant.headers);
+          headers: headers);
       if (response.statusCode == 201 || response.statusCode == 200) {
         return jsonDecode(response.body);
       }
@@ -54,9 +57,12 @@ class RemoteService {
 
   Future<List<Country>> getCountries() async {
     try {
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
       final response = await client.get(
           Uri.parse('${Constant.url}/v1/country?id=105'),
-          headers: Constant.headers);
+          headers: headers);
       if (response.statusCode == 200) {
         return countryFromJson(response.body);
       }
@@ -68,9 +74,11 @@ class RemoteService {
 
   Future<List<Province>> getProvinces() async {
     try {
-      final response = await client.get(
-          Uri.parse('${Constant.url}/v1/state?id=30'),
-          headers: Constant.headers);
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
+      final response = await client
+          .get(Uri.parse('${Constant.url}/v1/state?id=30'), headers: headers);
       if (response.statusCode == 200) {
         return provinceFromJson(response.body);
       }
@@ -82,9 +90,12 @@ class RemoteService {
 
   Future<List<District>> getDistricts() async {
     try {
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
       final response = await client.get(
-          Uri.parse('${Constant.url}/v1/district?stateId=30'),
-          headers: Constant.headers);
+          Uri.parse('${Constant.url}/v1/getDistrict?id=30'),
+          headers: headers);
       if (response.statusCode == 200) {
         return districtFromJson(response.body);
       }
@@ -96,9 +107,12 @@ class RemoteService {
 
   Future<List<Taluk>> getTaluks(districtId) async {
     try {
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
       final response = await client.get(
-          Uri.parse('${Constant.url}/v1/taluk?districtId=$districtId'),
-          headers: Constant.headers);
+          Uri.parse('${Constant.url}/v1/getTaluk?id=$districtId'),
+          headers: headers);
       if (response.statusCode == 200) {
         return talukFromJson(response.body);
       }
@@ -110,9 +124,12 @@ class RemoteService {
 
   Future<List<Parliament>> getParliaments(districtId) async {
     try {
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
       final response = await client.get(
-          Uri.parse('${Constant.url}/v1/parliament?districtId=$districtId'),
-          headers: Constant.headers);
+          Uri.parse('${Constant.url}/v1/getParliament?id=$districtId'),
+          headers: headers);
       if (response.statusCode == 200) {
         return parliamentFromJson(response.body);
       }
@@ -124,9 +141,12 @@ class RemoteService {
 
   Future<List<Assembly>> getAssemblies(districtId) async {
     try {
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
       final response = await client.get(
-          Uri.parse('${Constant.url}/v1/assembly?districtId=$districtId'),
-          headers: Constant.headers);
+          Uri.parse('${Constant.url}/v1/getAssembly?id=$districtId'),
+          headers: headers);
       if (response.statusCode == 200) {
         return assemblyFromJson(response.body);
       }
@@ -138,9 +158,12 @@ class RemoteService {
 
   Future<List<Localbody>> getLocalbodies(districtId) async {
     try {
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
       final response = await client.get(
-          Uri.parse('${Constant.url}/v1/localbody?districtId=$districtId'),
-          headers: Constant.headers);
+          Uri.parse('${Constant.url}/v1/getLocalbody?id=$districtId'),
+          headers: headers);
       if (response.statusCode == 200) {
         return localbodyFromJson(response.body);
       }
@@ -152,9 +175,12 @@ class RemoteService {
 
   Future<List<Ward>> getWards(localbodyId) async {
     try {
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
       final response = await client.get(
-          Uri.parse('${Constant.url}/v1/ward?localbodyId=$localbodyId'),
-          headers: Constant.headers);
+          Uri.parse('${Constant.url}/v1/getWard?id=$localbodyId'),
+          headers: headers);
       if (response.statusCode == 200) {
         return wardFromJson(response.body);
       }
@@ -166,9 +192,12 @@ class RemoteService {
 
   Future<List<Booth>> getBooths(Ward ward) async {
     try {
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
       final response = await client.get(
-          Uri.parse('${Constant.url}/v1/booth?wardId=${ward.id}'),
-          headers: Constant.headers);
+          Uri.parse('${Constant.url}/v1/getBooth?id=${ward.id}'),
+          headers: headers);
       if (response.statusCode == 200) {
         return boothFromJson(response.body);
       }
@@ -180,9 +209,12 @@ class RemoteService {
 
   Future<List<Voter>> getVoter(String voterId) async {
     try {
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
       final response = await client.get(
-          Uri.parse('${Constant.url}/v1/voter?voterId=$voterId'),
-          headers: Constant.headers);
+          Uri.parse('${Constant.url}/v1/getMyVoter?voterId=$voterId'),
+          headers: headers);
       if (response.statusCode == 200) {
         return voterFromJson(response.body);
       }
@@ -194,9 +226,12 @@ class RemoteService {
 
   Future<List<Voter>> getVoterWithPhone(String phone) async {
     try {
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
       final response = await client.get(
-          Uri.parse('${Constant.url}/v1/voter?phone=$phone'),
-          headers: Constant.headers);
+          Uri.parse('${Constant.url}/v1/getMyVoter?phone=$phone'),
+          headers: headers);
       if (response.statusCode == 200) {
         return voterFromJson(response.body);
       }
@@ -208,8 +243,10 @@ class RemoteService {
 
   Future<Map<String, dynamic>> createAgent(Map<String, dynamic> data) async {
     try {
-      Map<String, String> headers = Constant.headers;
-      headers['accessToken'] = await Shared.getAccessToken();
+      Map<String, String> headers = {
+        'Content-Type': 'application/json',
+        'Authorization': await Shared.getAccessToken()
+      };
       final response = await client.patch(
           Uri.parse('${Constant.url}/v1/createAgent'),
           body: json.encode(data),
@@ -225,12 +262,12 @@ class RemoteService {
 
   Future<List<Voter>> getUnassingedVotersWithWard() async {
     try {
-      Voter voter = await Shared.getData();
-      print(voter.wardId);
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
       final response = await client.get(
-          Uri.parse(
-              '${Constant.url}/v1/voter?wardId=${voter.wardId}&isTaken=false&isAgent=false'),
-          headers: Constant.headers);
+          Uri.parse('${Constant.url}/v1/unassignedWardVoters'),
+          headers: headers);
       if (response.statusCode == 200) {
         return voterFromJson(response.body);
       }
@@ -242,8 +279,10 @@ class RemoteService {
 
   Future<bool> assignVoters(Map<String, dynamic> data) async {
     try {
-      Map<String, String> headers = Constant.headers;
-      headers['accessToken'] = await Shared.getAccessToken();
+      Map<String, String> headers = {
+        'Content-Type': 'application/json',
+        'Authorization': await Shared.getAccessToken()
+      };
       var response = await client.patch(
           Uri.parse('${Constant.url}/v1/assing-me'),
           body: json.encode(data),
@@ -259,8 +298,10 @@ class RemoteService {
 
   Future<bool> unAssignVoters(Map<String, dynamic> data) async {
     try {
-      Map<String, String> headers = Constant.headers;
-      headers['accessToken'] = await Shared.getAccessToken();
+      Map<String, String> headers = {
+        'Content-Type': 'application/json',
+        'Authorization': await Shared.getAccessToken()
+      };
       var response = await client.patch(
           Uri.parse('${Constant.url}/v1/resign-me'),
           body: json.encode(data),
@@ -276,12 +317,12 @@ class RemoteService {
 
   Future<List<Voter>> getAassingedVotersWithWard() async {
     try {
-      Map<String, String> headers = Constant.headers;
-
-      await Shared.getAccessToken()
-          .then((value) => {headers['accessToken'] = value});
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
       var response = await client
-          .get(Uri.parse('${Constant.url}/v1/getMyVoters'), headers: headers);
+          .get(Uri.parse('${Constant.url}/v1/myVoterList'), headers: headers);
+      print(response.body.toString());
       if (response.statusCode == 200) {
         return voterFromJson(response.body);
       }
@@ -293,10 +334,12 @@ class RemoteService {
 
   Future<List<Activity>> getVoterActivity(var id) async {
     try {
-      Map<String, String> headers = Constant.headers;
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
 
       var response = await client.get(
-          Uri.parse('${Constant.url}/v1/voteractivity?voterId=$id'),
+          Uri.parse('${Constant.url}/v1/get-voter-activity?id=$id'),
           headers: headers);
       if (response.statusCode == 200) {
         return activityFromJson(response.body);
@@ -309,8 +352,10 @@ class RemoteService {
 
   Future<bool> createVoterActivity(Map<String, dynamic> data) async {
     try {
-      Map<String, String> headers = Constant.headers;
-      headers['accessToken'] = await Shared.getAccessToken();
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken(),
+        'Content-Type': 'application/json'
+      };
       var response = await client.post(
           Uri.parse('${Constant.url}/v1/create-voter-activity'),
           body: json.encode(data),
@@ -324,28 +369,12 @@ class RemoteService {
     }
   }
 
-  Future<bool> updateVoterActivity(Map<String, dynamic> data) async {
-    try {
-      Map<String, String> headers = Constant.headers;
-      headers['accessToken'] = await Shared.getAccessToken();
-      var response = await client.patch(
-          Uri.parse('${Constant.url}/v1/update-voter-activity'),
-          body: json.encode(data),
-          headers: headers);
-      if (response.statusCode == 200) {
-        return true;
-      }
-      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   Future<List<Voter>> getAgent() async {
     try {
-      Map<String, String> headers = Constant.headers;
-      headers['accessToken'] = await Shared.getAccessToken();
-      var response = await client.get(Uri.parse('${Constant.url}/v1/get-agent'),
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
+      var response = await client.get(Uri.parse('${Constant.url}/v1/getAgent'),
           headers: headers);
       if (response.statusCode == 200) {
         return voterFromJson(response.body);
@@ -358,9 +387,11 @@ class RemoteService {
 
   Future<List<Party>> getParties() async {
     try {
-      Map<String, String> headers = Constant.headers;
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
       var response = await client.get(
-          Uri.parse('${Constant.url}/v1/electionparties'),
+          Uri.parse('${Constant.url}/v1/getElectionPartices'),
           headers: headers);
       if (response.statusCode == 200) {
         return partyFromJson(response.body);
@@ -371,14 +402,17 @@ class RemoteService {
     }
   }
 
-  Future<Map<String, dynamic>> createVoter(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> addNewVoter(Map<String, dynamic> data) async {
     try {
-      Map<String, String> headers = Constant.headers;
-      headers['accessToken'] = await Shared.getAccessToken();
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken(),
+        'Content-Type': 'application/json'
+      };
       var response = await client.post(
-          Uri.parse('${Constant.url}/v1/create-voter'),
+          Uri.parse('${Constant.url}/v1/add-new-voter'),
           body: json.encode(data),
           headers: headers);
+      print(response.body);
       if (response.statusCode == 201) {
         return jsonDecode(response.body);
       }
@@ -388,12 +422,14 @@ class RemoteService {
     }
   }
 
-  Future<bool> updateVoter(Map<String, dynamic> data) async {
+  Future<bool> updateVoter(Map<String, dynamic> data, int id) async {
     try {
-      Map<String, String> headers = Constant.headers;
-      headers['accessToken'] = await Shared.getAccessToken();
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken(),
+        'Content-Type': 'application/json'
+      };
       var response = await client.patch(
-          Uri.parse('${Constant.url}/v1/update-voter'),
+          Uri.parse('${Constant.url}/v1/update-voter/?id=$id'),
           body: json.encode(data),
           headers: headers);
       if (response.statusCode == 200) {
@@ -407,12 +443,32 @@ class RemoteService {
 
   Future<List<Message>> getMessages(int id) async {
     try {
-      Map<String, String> headers = Constant.headers;
-      headers['accessToken'] = await Shared.getAccessToken();
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
       var response = await client.get(
           Uri.parse('${Constant.url}/v1/get-voter-message?id=$id'),
           headers: headers);
       if (response.statusCode == 200) {
+        return messageFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Message>> sendMessages(Map<String, dynamic> data) async {
+    try {
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken(),
+        'Content-Type': 'application/json'
+      };
+      var response = await client.post(
+          Uri.parse('${Constant.url}/v1/post-voter-message'),
+          body: json.encode(data),
+          headers: headers);
+      if (response.statusCode == 201) {
         return messageFromJson(response.body);
       }
       throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';

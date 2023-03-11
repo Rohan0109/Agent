@@ -7,7 +7,7 @@ import '../models/voter.dart';
 class Shared {
   static Future<bool> setShared(Map<String, dynamic> data) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('accessToken', data['accessToken']);
+    prefs.setString('Authorization', 'Bearer ${data['Authorization']}');
     prefs.setBool('session', data['session']);
     prefs.setString('data', jsonEncode(data['data']).toString());
     return true;
@@ -15,7 +15,7 @@ class Shared {
 
   static Future<bool> setAuthShared(Map<String, dynamic> data) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('accessToken', data['accessToken']);
+    prefs.setString('Authorization', 'Bearer ${data['Authorization']}');
     prefs.setBool('session', data['session']);
     return true;
   }
@@ -24,11 +24,6 @@ class Shared {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.setString('phoneNumber', phone);
   }
-
-  // static Future<bool> setData(Map<String, dynamic> data) async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   return prefs.setString('data', jsonEncode());
-  // }
 
   static updatedSession() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -47,7 +42,7 @@ class Shared {
 
   static Future<String> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('accessToken').toString();
+    return prefs.getString('Authorization').toString();
   }
 
   static getStatus() async {
