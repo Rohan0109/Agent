@@ -410,7 +410,7 @@ class _CreateVoterState extends State<CreateVoter> {
       data['memberId'] = memberIdController?.text.toString();
     }
     try {
-      Map<String, dynamic> maps = await _remoteService.addNewVoter(data);
+      Map<String, dynamic> maps = await _remoteService.createVoter(data);
       createAgent(maps['upsertedId']);
     } catch (e) {
       setState(() {

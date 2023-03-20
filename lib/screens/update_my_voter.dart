@@ -488,9 +488,17 @@ class _UpdateMyVoterState extends State<UpdateMyVoter> {
     });
 
     Map<String, dynamic> data = {
+      'countryId': widget.voter.countryId,
+      'stateId': widget.voter.stateId,
+      'districtId': widget.voter.districtId,
+      'parliamentId': widget.voter.parliamentId,
+      'assemblyId': widget.voter.assemblyId,
+      'talukId': widget.voter.talukId,
+      'localbodyId': widget.voter.localbodyId,
+      'wardId': widget.voter.wardId,
       'voterId': widget.voter.id,
       'partyId': [selectedParty?.id],
-      'percentage': statusPercentageValue
+      'percentage': statusPercentageValue.toString()
     };
     if ((commandController?.text.isNotEmpty)!) {
       data['command'] = commandController?.text;

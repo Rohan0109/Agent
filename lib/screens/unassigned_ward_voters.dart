@@ -116,9 +116,13 @@ class _UnassignedWardVotersState extends State<UnassignedWardVoters> {
                         _voters?[index].voterId ?? '',
                         style: TextStyle(fontSize: 26.0, color: Colors.black87),
                       ),
-                      Text(
-                        (_voters?[index].name.ta.toString().toUpperCase())!,
-                        style: TextStyle(fontSize: 20.0, color: Colors.black87),
+                      Flexible(
+                        child: Text(
+                          (_voters?[index].name.ta.toString().toUpperCase())!,
+                          style:
+                              TextStyle(fontSize: 20.0, color: Colors.black87),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       Text(
                         _voters?[index].sentinal?.ta.toUpperCase() ?? '',

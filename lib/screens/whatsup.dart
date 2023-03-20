@@ -92,9 +92,9 @@ class _WhatsUpState extends State<WhatsUp> {
                           padding: EdgeInsets.all(8.0),
                           child: Ink(
                             decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: Colors.blue, width: 5),
-                                color: Colors.blueAccent,
+                                border: Border.all(
+                                    color: Constant.primeColor, width: 5),
+                                color: Constant.primeColor,
                                 borderRadius: BorderRadius.circular(50.0)),
                             child: InkWell(
                                 onTap: () {
@@ -171,7 +171,7 @@ class _WhatsUpState extends State<WhatsUp> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      'images/empty.png',
+                      'assets/images/empty.png',
                       width: 300,
                     ),
                     SizedBox(height: 10),

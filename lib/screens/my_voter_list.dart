@@ -169,7 +169,7 @@ class _MyVoterListState extends State<MyVoterList>
                     Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('${Constant.voter} .${Constant.no}'),
+                        Text('${Constant.voter} ${Constant.no}'),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                           child: GestureDetector(
@@ -178,8 +178,8 @@ class _MyVoterListState extends State<MyVoterList>
                             },
                             child: Text(
                               Constant.join,
-                              style:
-                                  TextStyle(fontSize: 18.0, color: Colors.blue),
+                              style: TextStyle(
+                                  fontSize: 18.0, color: Constant.primeColor),
                             ),
                           ),
                         )

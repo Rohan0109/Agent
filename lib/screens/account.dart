@@ -15,7 +15,7 @@ class Account extends StatefulWidget {
 }
 
 class _AccountState extends State<Account> with AutomaticKeepAliveClientMixin {
-  RemoteService remoteService = RemoteService();
+  final RemoteService _remoteService = RemoteService();
 
   Voter? _voter;
 
@@ -72,7 +72,7 @@ class _AccountState extends State<Account> with AutomaticKeepAliveClientMixin {
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      // resizeToAvoidBottomInset: false,
       key: scaffoldKey,
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -130,7 +130,7 @@ class _AccountState extends State<Account> with AutomaticKeepAliveClientMixin {
                     height: 20,
                   ),
                   TextFormField(
-                    enabled: false,
+                    enabled: true,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return '* முகவர் பெயர் தேவை';
@@ -148,7 +148,7 @@ class _AccountState extends State<Account> with AutomaticKeepAliveClientMixin {
                   ),
                   SizedBox(height: 10),
                   TextFormField(
-                    enabled: false,
+                    enabled: true,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return '* தந்தை/கணவர் பெயர் தேவை';
@@ -200,7 +200,7 @@ class _AccountState extends State<Account> with AutomaticKeepAliveClientMixin {
                   ),
                   SizedBox(height: 10),
                   TextFormField(
-                    enabled: false,
+                    enabled: true,
                     decoration: InputDecoration(
                         hintText: 'கதவு எண்',
                         labelText: 'கதவு எண்',
@@ -239,11 +239,11 @@ class _AccountState extends State<Account> with AutomaticKeepAliveClientMixin {
                     height: 10,
                   ),
                   Visibility(
-                    visible: false,
+                    visible: true,
                     child: MaterialButton(
                       minWidth: double.infinity,
                       height: 46,
-                      color: Colors.black,
+                      color: Constant.primeColor,
                       textColor: Colors.white,
                       onPressed: () {
                         if (formKey.currentState!.validate()) {
@@ -251,7 +251,7 @@ class _AccountState extends State<Account> with AutomaticKeepAliveClientMixin {
                         }
                       },
                       child: const Text(
-                        'Update',
+                        'சமர்ப்பி',
                         style: TextStyle(fontSize: 20.0),
                       ),
                     ),
@@ -272,10 +272,9 @@ class _AccountState extends State<Account> with AutomaticKeepAliveClientMixin {
     });
 
     try {
-      List<Voter> voters = await remoteService.getAgent();
+      List<Voter> voters = await _remoteService.getAgent();
       if (voters.isNotEmpty) {
         setState(() {
-          _isLoading = false;
           _voter = voters[0];
           userNameController?.text = _voter?.name.ta ?? '';
           phonenumberController?.text = _voter?.phone ?? '';
@@ -286,43 +285,42 @@ class _AccountState extends State<Account> with AutomaticKeepAliveClientMixin {
           sexController?.text =
               _tSex[_eSex.indexOf(_voter?.sex?.toLowerCase() ?? 'male')];
         });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
       }
     } catch (e) {
+      _updateSuccessMessage(e);
+    } finally {
       setState(() {
         _isLoading = false;
       });
-      _updateSuccessMessage(e);
     }
   }
 
   Future<void> updateAgent() async {
-    // setState(() {
-    //   _isLoading = false;
-    // });
-    // Map<String, dynamic> data = {
-    //   'name': '${userNameController?.text}',
-    //   'ntkId': '${ntkIdController?.text}',
-    //   'country': '$countryValue',
-    //   'state': '$stateValue',
-    //   'district': '$cityValue',
-    //   'taluk': '${talukController?.text}',
-    //   'ward': '${wardController?.text}',
-    //   'subWard': '${SubwardController?.text}',
-    //   'isActive': true
-    // };
-    // bool? isSuccess = await RemoteService.updateAgent(data);
-    // if (isSuccess!) {
-    //   _isLoading = true;
-    //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-    //       content: Text("Updated"),
-    //       duration: Duration(seconds: 1, milliseconds: 0)));
-    // } else {
-    //   _isLoading = true;
-    // }
+    setState(() {
+      _isLoading = true;
+    });
+    Map<String, dynamic> data = {
+      'name': {
+        'en': userNameController?.text.toLowerCase(),
+        'ta': userNameController?.text.toLowerCase()
+      },
+      'sentinal': {
+        'en': fnameController?.text.toLowerCase(),
+        'ta': fnameController?.text.toLowerCase()
+      },
+      'doorNo': doorNoController?.text ?? '',
+      'age': int.parse(ageController?.text.toString() ?? '0')
+    };
+    try {
+      bool isSuccess = await _remoteService.updateVoter(data, _voter?.id ?? 0);
+      _updateSuccessMessage('வெற்றிகரமாக மேம்படுத்தப்பட்டது.');
+    } catch (e) {
+      _updateSuccessMessage(e);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   showAlertDialog(BuildContext context) {

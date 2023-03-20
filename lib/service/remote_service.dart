@@ -322,7 +322,6 @@ class RemoteService {
       };
       var response = await client
           .get(Uri.parse('${Constant.url}/v1/myVoterList'), headers: headers);
-      print(response.body.toString());
       if (response.statusCode == 200) {
         return voterFromJson(response.body);
       }
@@ -413,6 +412,25 @@ class RemoteService {
           body: json.encode(data),
           headers: headers);
       print(response.body);
+      if (response.statusCode == 201) {
+        return jsonDecode(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> createVoter(Map<String, dynamic> data) async {
+    try {
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken(),
+        'Content-Type': 'application/json'
+      };
+      var response = await client.post(
+          Uri.parse('${Constant.url}/v1/create-voter'),
+          body: json.encode(data),
+          headers: headers);
       if (response.statusCode == 201) {
         return jsonDecode(response.body);
       }
