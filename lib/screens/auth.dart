@@ -99,11 +99,12 @@ class _AuthState extends State<Auth> with TickerProviderStateMixin {
                     height: 46,
                     color: Constant.primeColor,
                     textColor: Colors.white,
-                    onPressed: () {
+                    onPressed: () async {
                       if (formKey.currentState!.validate()) {
-                        String? phone = phoneController?.text.toString()!;
-                        Shared.setPhonenumber(phone!);
-                        createAccount();
+                        String? phone = phoneController?.text.toString();
+                        await Shared.setPhonenumber(phone!).then((value) => {
+                              if (value) {createAccount()}
+                            });
                       }
                     },
                     shape: RoundedRectangleBorder(

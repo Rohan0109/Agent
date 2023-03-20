@@ -431,7 +431,7 @@ class _CreateVoterState extends State<CreateVoter> {
         setState(() {
           _isAccountExisting = true;
           voter = voters[0];
-          phoneController?.text = voter.phone ?? '';
+          phoneController?.text = (voter.phone ?? phoneController?.text)!;
           voterIdController?.text = voter.voterId;
           voterNameController?.text = voter.name.ta ?? '';
           voterFnameController?.text = voter.sentinal?.ta ?? '';
