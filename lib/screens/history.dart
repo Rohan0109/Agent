@@ -40,7 +40,7 @@ class _HistoryState extends State<History> {
       appBar: AppBar(
         automaticallyImplyLeading: true,
         title: Text('வரலாறு'),
-        actions: [],
+        actions: const [],
         centerTitle: false,
         elevation: 0,
       ),
@@ -54,7 +54,7 @@ class _HistoryState extends State<History> {
   Widget getOrderListWidget() {
     if (_activities.isNotEmpty) {
       var listView = ListView.builder(
-        itemCount: _activities?.length,
+        itemCount: _activities.length,
         itemBuilder: (BuildContext context, int index) {
           return GestureDetector(
               child: Card(

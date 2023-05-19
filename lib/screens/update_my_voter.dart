@@ -152,92 +152,104 @@ class _UpdateMyVoterState extends State<UpdateMyVoter> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Container(
-                              width: 100.0,
-                              color: _color,
-                              child: Center(
-                                child: Text(
-                                  '$statusPercentageValue%',
-                                  style: TextStyle(
-                                      fontSize: 28.0, color: Colors.white),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'வாக்காளர் வாக்களிக்க வாய்ப்புள்ள கட்சி',
+                            style: TextStyle(fontSize: 14.0),
+                          ),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Container(
+                                  width: 100.0,
+                                  color: _color,
+                                  child: Center(
+                                    child: Text(
+                                      '$statusPercentageValue%',
+                                      style: TextStyle(
+                                          fontSize: 28.0, color: Colors.white),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Expanded(
-                              child: Column(
-                                children: <Widget>[
-                                  DropdownButtonFormField(
-                                    validator: (Party? value) {
-                                      if (value == null || value.id == 0) {
-                                        return '* கட்சியை தேர்ந்தெடுக்கவும்';
-                                      } else {
-                                        return null;
-                                      }
-                                    },
-                                    decoration: InputDecoration(
-                                        enabled: true,
-                                        labelText: '* கட்சி',
-                                        border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8))),
-                                    value: selectedParty,
-                                    items: _parties
-                                        .map((e) => DropdownMenuItem(
-                                              value: e,
-                                              child:
-                                                  Text(e.short.ta.toString()),
-                                            ))
-                                        .toList(),
-                                    onChanged: (Party? value) {
-                                      setState(() {
-                                        selectedParty = value!;
-                                      });
-                                    },
-                                    hint: Text('கட்சி'),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    children: <Widget>[
+                                      DropdownButtonFormField(
+                                        validator: (Party? value) {
+                                          if (value == null || value.id == 0) {
+                                            return '* கட்சியை தேர்ந்தெடுக்கவும்';
+                                          } else {
+                                            return null;
+                                          }
+                                        },
+                                        decoration: InputDecoration(
+                                            enabled: true,
+                                            labelText: '* கட்சி',
+                                            border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8))),
+                                        value: selectedParty,
+                                        items: _parties
+                                            .map((e) => DropdownMenuItem(
+                                                  value: e,
+                                                  child: Text(
+                                                      e.short.ta.toString()),
+                                                ))
+                                            .toList(),
+                                        onChanged: (Party? value) {
+                                          setState(() {
+                                            selectedParty = value!;
+                                          });
+                                        },
+                                        hint: Text('கட்சி'),
+                                      ),
+                                      SizedBox(
+                                        height: 20,
+                                      ),
+                                      DropdownButtonFormField(
+                                        validator: (String? value) {
+                                          if (value == null || value == '0') {
+                                            return '* சதவீதம் தேர்ந்தெடுக்கவும்';
+                                          } else {
+                                            return null;
+                                          }
+                                        },
+                                        decoration: InputDecoration(
+                                            enabled: true,
+                                            labelText: '* சதவீதம்',
+                                            border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8))),
+                                        value: statusPercentageValue,
+                                        items: statusPercentage
+                                            .map((e) => DropdownMenuItem(
+                                                  value: e,
+                                                  child: Text(e),
+                                                ))
+                                            .toList(),
+                                        onChanged: (String? value) {
+                                          setState(() {
+                                            statusPercentageValue = value!;
+                                          });
+                                        },
+                                        hint: Text('சதவீதம்'),
+                                      )
+                                    ],
                                   ),
-                                  SizedBox(
-                                    height: 20,
-                                  ),
-                                  DropdownButtonFormField(
-                                    validator: (String? value) {
-                                      if (value == null || value == '0') {
-                                        return '* சதவீதம் தேர்ந்தெடுக்கவும்';
-                                      } else {
-                                        return null;
-                                      }
-                                    },
-                                    decoration: InputDecoration(
-                                        enabled: true,
-                                        labelText: '* சதவீதம்',
-                                        border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8))),
-                                    value: statusPercentageValue,
-                                    items: statusPercentage
-                                        .map((e) => DropdownMenuItem(
-                                              value: e,
-                                              child: Text(e),
-                                            ))
-                                        .toList(),
-                                    onChanged: (String? value) {
-                                      setState(() {
-                                        statusPercentageValue = value!;
-                                      });
-                                    },
-                                    hint: Text('சதவீதம்'),
-                                  )
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                     Padding(

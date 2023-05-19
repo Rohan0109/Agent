@@ -20,7 +20,7 @@ class AddNewVoter extends StatefulWidget {
 
 class _AddNewVoterState extends State<AddNewVoter>
     with AutomaticKeepAliveClientMixin {
-  RemoteService _remoteService = RemoteService();
+  final RemoteService _remoteService = RemoteService();
 
   bool _isLoading = true;
   bool _isTalukLoading = false;
@@ -367,8 +367,8 @@ class _AddNewVoterState extends State<AddNewVoter>
                               ),
                               onChanged: (Ward? value) {
                                 _ward = value!;
-                                if (value?.id != 0) {
-                                  getBooths(value!);
+                                if (value.id != 0) {
+                                  getBooths(value);
                                 }
                               },
                             )),
@@ -497,7 +497,7 @@ class _AddNewVoterState extends State<AddNewVoter>
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8))),
                     items: _sex
-                        ?.map((e) => DropdownMenuItem(
+                        .map((e) => DropdownMenuItem(
                               value: e,
                               child: Text(e.toString()),
                             ))
@@ -508,7 +508,9 @@ class _AddNewVoterState extends State<AddNewVoter>
                     hint: Text(
                       'உங்கள் பாலினத்தைத் தேர்ந்தெடுக்கவும்',
                     ),
-                    onChanged: (String? value) {},
+                    onChanged: (String? value) {
+                      _selectSex = value!;
+                    },
                   ),
                   SizedBox(
                     height: 14,

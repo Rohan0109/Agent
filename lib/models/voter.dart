@@ -20,6 +20,7 @@ class Voter {
     this.sex,
     this.isFather,
     this.boothId,
+    this.sno,
     required this.wardId,
     required this.talukId,
     required this.localbodyId,
@@ -62,6 +63,7 @@ class Voter {
   int? agentId;
   String? memberId;
   String? phone;
+  int? sno;
 
   factory Voter.fromJson(Map<String, dynamic> json) => Voter(
         voterId: json['voterId'],
@@ -89,6 +91,7 @@ class Voter {
         agentId: json['agentId'],
         memberId: json['memberId'],
         phone: json['phone'],
+        sno: json['sno'],
       );
 
   Map<String, dynamic> toJson() => {
@@ -116,6 +119,7 @@ class Voter {
         'agentId': agentId,
         'memberId': memberId,
         'phone': phone,
+        'sno': sno
       };
 }
 

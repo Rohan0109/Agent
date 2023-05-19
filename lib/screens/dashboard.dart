@@ -1,5 +1,6 @@
 import 'package:Mugavan/screens/account.dart';
 import 'package:Mugavan/screens/my_voter_list.dart';
+import 'package:Mugavan/screens/voter_chart.dart';
 import 'package:Mugavan/utils/constant.dart';
 import 'package:flutter/material.dart';
 
@@ -10,14 +11,15 @@ class Dashboard extends StatefulWidget {
   State<Dashboard> createState() => _DashboardState();
 }
 
-class _DashboardState extends State<Dashboard> {
+class _DashboardState extends State<Dashboard>
+    with AutomaticKeepAliveClientMixin {
   int _selectedIndex = 0;
 
   late PageController pageController;
 
   final List<Widget> _widgetOptions = <Widget>[
     const MyVoterList(),
-    // const AddVoter(),
+    const VoterChart(),
     const Account(),
   ];
 
@@ -60,10 +62,10 @@ class _DashboardState extends State<Dashboard> {
               label: Constant.voter,
               icon: Icon(Icons.list_alt),
               backgroundColor: Color.fromRGBO(31, 71, 136, 1)),
-          // BottomNavigationBarItem(
-          //     label: 'இணை',
-          //     icon: Icon(Icons.add_box_rounded),
-          //     backgroundColor: Color.fromRGBO(31, 71, 136, 1)),
+          BottomNavigationBarItem(
+              label: 'பகுப்பாய்வு',
+              icon: Icon(Icons.add_box_rounded),
+              backgroundColor: Color.fromRGBO(31, 71, 136, 1)),
           BottomNavigationBarItem(
               label: Constant.account,
               icon: Icon(Icons.account_circle),
@@ -73,4 +75,7 @@ class _DashboardState extends State<Dashboard> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

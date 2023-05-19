@@ -90,7 +90,7 @@ class _UnassignedWardVotersState extends State<UnassignedWardVoters> {
                 setState(() {
                   if (_voters?[index].isTaken == true) {
                     _voters?[index].isTaken = false;
-                    assignIds.removeAt(index);
+                    assignIds.remove(_voters?[index].id);
                   } else {
                     _voters?[index].isTaken = true;
                     assignIds.add((_voters?[index].id)!);
@@ -107,26 +107,62 @@ class _UnassignedWardVotersState extends State<UnassignedWardVoters> {
                   borderRadius: BorderRadius.circular(15.0),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _voters?[index].sno.toString() ?? '0',
+                            style: TextStyle(
+                                fontSize: 20.0, color: Colors.black87),
+                          ),
+                          Checkbox(
+                            focusColor: Colors.white,
+                            value: _voters?[index].isTaken,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                _voters?[index].isTaken = value!;
+                                if (value!) {
+                                  assignIds.add((_voters?[index].id)!);
+                                } else {
+                                  assignIds.removeAt(index);
+                                }
+                              });
+                            },
+                          ),
+                        ],
+                      ),
                       Text(
                         _voters?[index].voterId ?? '',
                         style: TextStyle(fontSize: 26.0, color: Colors.black87),
+                      ),
+                      SizedBox(
+                        height: 4,
                       ),
                       Flexible(
                         child: Text(
                           (_voters?[index].name.ta.toString().toUpperCase())!,
                           style:
-                              TextStyle(fontSize: 20.0, color: Colors.black87),
+                              TextStyle(fontSize: 16.0, color: Colors.black87),
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      SizedBox(
+                        height: 4,
+                      ),
                       Text(
                         _voters?[index].sentinal?.ta.toUpperCase() ?? '',
-                        style: TextStyle(fontSize: 20.0, color: Colors.black87),
+                        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(
+                        height: 4,
                       ),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,7 +170,7 @@ class _UnassignedWardVotersState extends State<UnassignedWardVoters> {
                         children: [
                           Text(
                             _tSex[_eSex.indexOf((_voters?[index]
-                                ?.sex
+                                .sex
                                 .toString()
                                 .toLowerCase())!)],
                             style: TextStyle(
@@ -146,20 +182,6 @@ class _UnassignedWardVotersState extends State<UnassignedWardVoters> {
                                 fontSize: 14.0, color: Colors.black87),
                           ),
                         ],
-                      ),
-                      Checkbox(
-                        focusColor: Colors.white,
-                        value: _voters?[index].isTaken,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _voters?[index].isTaken = value!;
-                            if (value!) {
-                              assignIds.add((_voters?[index].id)!);
-                            } else {
-                              assignIds.removeAt(index);
-                            }
-                          });
-                        },
                       ),
                     ],
                   ),

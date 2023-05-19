@@ -15,7 +15,7 @@ class MyVoterList extends StatefulWidget {
 
 class _MyVoterListState extends State<MyVoterList>
     with AutomaticKeepAliveClientMixin {
-  RemoteService remoteService = RemoteService();
+  final RemoteService _remoteService = RemoteService();
 
   List<Voter>? _voters;
   bool _isLoading = true;
@@ -112,11 +112,15 @@ class _MyVoterListState extends State<MyVoterList>
                       ),
                       Text(
                         _voters?[index].name.ta.toUpperCase() ?? '',
-                        style: TextStyle(fontSize: 20.0, color: Colors.black87),
+                        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         (_voters?[index].sentinal?.ta.toUpperCase()) ?? '',
-                        style: TextStyle(fontSize: 20.0, color: Colors.black87),
+                        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +212,7 @@ class _MyVoterListState extends State<MyVoterList>
       _isLoading = true;
     });
     try {
-      List<Voter> voters = await remoteService.getAassingedVotersWithWard();
+      List<Voter> voters = await _remoteService.getAassingedVotersWithWard();
       setState(() {
         _voters = voters;
       });

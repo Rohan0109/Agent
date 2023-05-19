@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:Mugavan/models/assembly.dart';
 import 'package:Mugavan/models/booth.dart';
+import 'package:Mugavan/models/chart_model.dart';
 import 'package:Mugavan/models/district.dart';
 import 'package:Mugavan/models/localbody.dart';
 import 'package:Mugavan/models/message.dart';
@@ -411,7 +412,6 @@ class RemoteService {
           Uri.parse('${Constant.url}/v1/add-new-voter'),
           body: json.encode(data),
           headers: headers);
-      print(response.body);
       if (response.statusCode == 201) {
         return jsonDecode(response.body);
       }
@@ -488,6 +488,41 @@ class RemoteService {
           headers: headers);
       if (response.statusCode == 201) {
         return messageFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<ChartModel>> getCharts() async {
+    try {
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
+      var response = await client.get(
+          Uri.parse('${Constant.url}/v1/get-chart-data?type=wardId&id=1'),
+          headers: headers);
+      if (response.statusCode == 200) {
+        return chartModelFromJson(response.body);
+      }
+      throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<int> getChartsLength() async {
+    try {
+      Map<String, String> headers = {
+        'Authorization': await Shared.getAccessToken()
+      };
+      var response = await client.get(
+          Uri.parse(
+              '${Constant.url}/v1/get-chart-data-length?type=wardId&id=1'),
+          headers: headers);
+      if (response.statusCode == 200) {
+        return json.decode(response.body)['length'];
       }
       throw 'StatusCode : ${response.statusCode}, message : ${response.body.toString()}';
     } catch (e) {
